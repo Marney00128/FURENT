@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Cuentas Guardadas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .status.success { border-left: 4px solid #48bb78; }
+        .status.error { border-left: 4px solid #e53e3e; }
+        .status.warning { border-left: 4px solid #ed8936; }
+        
+        .icon {
+            font-size: 1.5rem;
+        }
+        
+        .icon.success { color: #48bb78; }
+        .icon.error { color: #e53e3e; }
+        .icon.warning { color: #ed8936; }
+        
+        .account-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .account-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .account-info {
+            flex: 1;
+        }
+        
+        .account-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+        
+        .account-email {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        .account-date {
+            color: #a0aec0;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c53030;
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #a0aec0;
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug - Cuentas Guardadas</h1>
+        <p class="subtitle">Herramienta de diagnóstico para verificar el sistema de cuentas</p>
+        
+        <!-- Estado del localStorage -->
+        <div class="section">
+            <h2>📊 Estado del Sistema</h2>
+            <div id="systemStatus"></div>
+        </div>
+        
+        <!-- Lista de cuentas -->
+        <div class="section">
+            <h2>👥 Cuentas Guardadas</h2>
+            <div id="accountsList"></div>
+        </div>
+        
+        <!-- Datos RAW -->
+        <div class="section">
+            <h2>💾 Datos RAW (JSON)</h2>
+            <div class="code-block" id="rawData"></div>
+        </div>
+        
+        <!-- Acciones -->
+        <div class="section">
+            <h2>🛠️ Acciones</h2>
+            <div class="actions">
+                <button class="btn btn-success" onclick="addTestAccount()">➕ Agregar Cuenta de Prueba</button>
+                <button class="btn btn-primary" onclick="goToSelector()">🔗 Ir al Selector</button>
+                <button class="btn btn-primary" onclick="goToLogin()">🔑 Ir al Login</button>
+                <button class="btn btn-danger" onclick="clearAccounts()">🗑️ Limpiar Todo</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function checkSystem() {
+            const statusDiv = document.getElementById('systemStatus');
+            const accountsDiv = document.getElementById('accountsList');
+            const rawDataDiv = document.getElementById('rawData');
+            
+            // Verificar soporte de localStorage
+            const hasLocalStorage = typeof(Storage) !== "undefined";
+            
+            if (!hasLocalStorage) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        <span class="icon error">❌</span>
+                        <div>
+                            <strong>localStorage no está disponible</strong>
+                            <div>Tu navegador no soporta localStorage o está deshabilitado</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Obtener cuentas guardadas
+            let savedAccounts = [];
+            try {
+                savedAccounts = JSON.parse(localStorage.getItem('savedAccounts') || '[]');
+            } catch (e) {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        <span class="icon error">❌</span>
+                        <div>
+                            <strong>Error al leer localStorage</strong>
+                            <div>${e.message}</div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Mostrar estado
+            statusDiv.innerHTML = `
+                <div class="status success">
+                    <span class="icon success">✅</span>
+                    <div>
+                        <strong>localStorage funcionando correctamente</strong>
+                        <div>Se encontraron ${savedAccounts.length} cuenta(s) guardada(s)</div>
+                    </div>
+                </div>
+            `;
+            
+            // Mostrar cuentas
+            if (savedAccounts.length === 0) {
+                accountsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <h3>No hay cuentas guardadas</h3>
+                        <p>Agrega una cuenta de prueba o inicia sesión en la aplicación</p>
+                    </div>
+                `;
+            } else {
+                accountsDiv.innerHTML = savedAccounts.map((account, index) => {
+                    const initials = getInitials(account.nombre);
+                    const date = new Date(account.lastAccess);
+                    const formattedDate = date.toLocaleString('es-ES');
+                    
+                    return `
+                        <div class="account-card">
+                            <div class="account-avatar">${initials}</div>
+                            <div class="account-info">
+                                <div class="account-name">${account.nombre}</div>
+                                <div class="account-email">${account.correo}</div>
+                                <div class="account-date">Último acceso: ${formattedDate}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Mostrar datos RAW
+            rawDataDiv.textContent = JSON.stringify(savedAccounts, null, 2);
+        }
+        
+        function getInitials(nombre) {
+            const words = nombre.split(' ');
+            if (words.length >= 2) {
+                return words[0][0].toUpperCase() + words[1][0].toUpperCase();
+            }
+            return nombre.substring(0, 2).toUpperCase();
+        }
+        
+        function addTestAccount() {
+            const savedAccounts = JSON.parse(localStorage.getItem('savedAccounts') || '[]');
+            const testAccount = {
+                nombre: "Usuario de Prueba",
+                correo: "prueba" + Date.now() + "@test.com",
+                lastAccess: new Date().toISOString()
+            };
+            
+            savedAccounts.push(testAccount);
+            localStorage.setItem('savedAccounts', JSON.stringify(savedAccounts));
+            
+            alert('✅ Cuenta de prueba agregada');
+            checkSystem();
+        }
+        
+        function clearAccounts() {
+            if (confirm('¿Estás seguro de eliminar todas las cuentas guardadas?')) {
+                localStorage.removeItem('savedAccounts');
+                alert('🗑️ Todas las cuentas han sido eliminadas');
+                checkSystem();
+            }
+        }
+        
+        function goToSelector() {
+            window.location.href = '/login';
+        }
+        
+        function goToLogin() {
+            window.location.href = '/login/new';
+        }
+        
+        // Cargar al iniciar
+        checkSystem();
+        
+        // Actualizar cada 2 segundos
+        setInterval(checkSystem, 2000);
+    </script>
+</body>
+</html>

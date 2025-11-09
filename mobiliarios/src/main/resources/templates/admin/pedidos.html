@@ -1,0 +1,2858 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pedidos | Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/admin-notifications.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/format-utils.js"></script>
+    <script th:inline="javascript">
+        // Token CSRF para protección
+        const CSRF_TOKEN = /*[[${csrfToken}]]*/ '';
+    </script>
+    <style>
+        /* Global Styles */
+        * {
+            scroll-behavior: smooth;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+        }
+
+        /* Panel de Búsqueda y Filtros */
+        .search-filter-panel {
+            background: var(--card-bg, white);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid var(--border-color, #e0e0e0);
+            animation: fadeInDown 0.5s ease;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .search-filter-panel * {
+            box-sizing: border-box;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box i.bi-search {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 18px;
+            z-index: 1;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 50px 15px 50px;
+            border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 12px;
+            font-size: 15px;
+            color: var(--text-primary, #2c3e50);
+            background: var(--bg-primary, #f8f9fa);
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #8cbc00;
+            box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1);
+            background: var(--card-bg, white);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary, #95a5a6);
+        }
+
+        .btn-clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-clear-search:hover {
+            color: #e74c3c;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .filters-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1 1 200px;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary, #7f8c8d);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group label i {
+            color: #8cbc00;
+            font-size: 14px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-primary, #2c3e50);
+            background: var(--bg-primary, #f8f9fa);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-group select:hover {
+            border-color: #8cbc00;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #8cbc00;
+            box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.1);
+        }
+
+        .btn-reset-filters {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+            border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 10px;
+            color: var(--text-primary, #2c3e50);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-reset-filters:hover {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border-color: #e74c3c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-reset-filters i {
+            font-size: 16px;
+        }
+
+        .results-info {
+            padding: 12px 18px;
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.08), rgba(3, 123, 192, 0.08));
+            border-radius: 10px;
+            border-left: 4px solid #8cbc00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-primary, #2c3e50);
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .results-info i {
+            color: #8cbc00;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .results-info span {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        body.dark-mode .search-filter-panel {
+            background: var(--dark-card-bg, #1e2130);
+            border-color: var(--dark-border, #2d3139);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .search-box input,
+        body.dark-mode .filter-group select {
+            background: var(--dark-bg-secondary, #1a1d29);
+            border-color: var(--dark-border, #2d3139);
+        }
+
+        /* Animaciones */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        /* Tarjeta de Usuario */
+        .usuario-card {
+            background: var(--card-bg, white);
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color, #e0e0e0);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.6s ease backwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .usuario-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .usuario-card:hover::before {
+            left: 100%;
+        }
+        
+        .usuario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #8cbc00;
+        }
+        
+        .usuario-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color, #ecf0f1);
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .usuario-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3);
+        }
+
+        .usuario-card:hover .usuario-avatar {
+            transform: rotate(360deg) scale(1.1);
+        }
+        
+        .usuario-info h3 {
+            margin: 0 0 5px 0;
+            color: var(--text-primary, #2c3e50);
+            font-size: 18px;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+
+        .usuario-card:hover .usuario-info h3 {
+            color: #8cbc00;
+        }
+        
+        .usuario-info p {
+            margin: 0;
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 14px;
+        }
+        
+        /* Grid de Pedidos */
+        .pedidos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        /* Pedido oculto */
+        .pedido-oculto {
+            display: none !important;
+        }
+
+        .pedido-oculto.mostrar {
+            display: flex !important;
+            animation: fadeInUp 0.4s ease backwards;
+        }
+
+        /* Pedido Item */
+        .pedido-item {
+            background: var(--bg-primary, #f8f9fa);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #8cbc00;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pedido-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(140, 188, 0, 0.1));
+            transition: width 0.4s ease;
+        }
+
+        .pedido-item:hover::after {
+            width: 100%;
+        }
+
+        .pedido-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(140, 188, 0, 0.25);
+            border-left-width: 6px;
+        }
+        
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .pedido-header strong {
+            color: var(--text-primary, #2c3e50);
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .pedido-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .info-item strong {
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 10px;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item span {
+            color: var(--text-primary, #2c3e50);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .info-item strong i {
+            margin-right: 3px;
+            color: #8cbc00;
+            font-size: 11px;
+        }
+
+        .info-value {
+            display: block;
+            margin-top: 3px;
+        }
+
+        /* Dirección de entrega */
+        .pedido-direccion {
+            padding: 8px 10px;
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.08), rgba(3, 123, 192, 0.08));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-primary, #2c3e50);
+            transition: all 0.3s ease;
+        }
+
+        .pedido-direccion:hover {
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.12), rgba(3, 123, 192, 0.12));
+        }
+
+        .pedido-direccion i {
+            font-size: 14px;
+            color: #8cbc00;
+            flex-shrink: 0;
+        }
+
+        /* Productos resumidos */
+        .productos-resumidos {
+            padding: 10px;
+            background: var(--card-bg, white);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+
+        .productos-resumidos strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-primary, #2c3e50);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .productos-resumidos strong i {
+            color: #037bc0;
+            margin-right: 4px;
+            font-size: 12px;
+        }
+
+        .productos-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .producto-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1976d2;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .producto-tag:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3);
+        }
+
+        .producto-cantidad {
+            background: rgba(25, 118, 210, 0.25);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+
+        body.dark-mode .producto-tag {
+            background: rgba(25, 118, 210, 0.2);
+            color: #64b5f6;
+        }
+
+        body.dark-mode .productos-resumidos {
+            background: var(--dark-bg-secondary, #1a1d29);
+            border-color: var(--dark-border, #2d3139);
+        }
+        
+        /* Badges de Estado */
+        .estado-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .estado-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .estado-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .estado-PENDIENTE { 
+            background: linear-gradient(135deg, #fff3cd, #ffe69c);
+            color: #856404;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+        .estado-CONFIRMADO { 
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+        .estado-EN_CURSO { 
+            background: linear-gradient(135deg, #e2d5f0, #d6c1e8);
+            color: #6f42c1;
+            box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+        }
+        .estado-COMPLETADO { 
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+        .estado-CANCELADO { 
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+        
+        /* Acciones */
+        .pedido-acciones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .estado-select {
+            grid-column: 1 / -1;
+            padding: 7px 10px;
+            border: 2px solid var(--border-color, #ecf0f1);
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            background: var(--card-bg, white);
+            color: var(--text-primary, #2c3e50);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .estado-select:hover {
+            border-color: #8cbc00;
+            box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.1);
+        }
+
+        .estado-select:focus {
+            outline: none;
+            border-color: #8cbc00;
+            box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.15);
+        }
+        
+        .btn-cambiar {
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #8cbc00, #6a9600);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(140, 188, 0, 0.3);
+        }
+        
+        .btn-cambiar:hover {
+            background: linear-gradient(135deg, #6a9600, #8cbc00);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(140, 188, 0, 0.4);
+        }
+
+        .btn-cambiar:active {
+            transform: translateY(-1px);
+        }
+        
+        .btn-eliminar {
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-eliminar:hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-eliminar:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-info {
+            grid-column: 1 / -1;
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #037bc0, #0288d1);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(3, 123, 192, 0.3);
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0288d1, #037bc0);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(3, 123, 192, 0.4);
+        }
+
+        .btn-info:active {
+            transform: translateY(0);
+        }
+
+        .btn-user {
+            grid-column: 1 / -1;
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #6f42c1, #8a63d2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 10px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 2px 6px rgba(111, 66, 193, 0.3);
+        }
+
+        .btn-user:hover {
+            background: linear-gradient(135deg, #8a63d2, #6f42c1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.4);
+        }
+
+        .btn-user:active {
+            transform: translateY(0);
+        }
+
+        /* Alert Box */
+        .alert {
+            animation: fadeInUp 0.5s ease;
+            border-radius: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .alert i {
+            font-size: 20px;
+        }
+
+        /* No Pedidos */
+        .no-pedidos {
+            text-align: center;
+            padding: 80px 20px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .no-pedidos i {
+            font-size: 80px;
+            color: var(--border-color, #ccc);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .no-pedidos h2 {
+            color: var(--text-secondary, #7f8c8d);
+            margin-top: 25px;
+            font-size: 24px;
+        }
+
+        /* Contador de Pedidos */
+        .pedidos-counter {
+            margin-left: auto;
+            text-align: center;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.1), rgba(3, 123, 192, 0.1));
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .pedidos-counter:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.2), rgba(3, 123, 192, 0.2));
+        }
+
+        .pedidos-counter-number {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pedidos-counter-label {
+            font-size: 11px;
+            color: var(--text-secondary, #7f8c8d);
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Botón Ver más */
+        .ver-mas-container {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border-color, #e0e0e0);
+        }
+
+        .btn-ver-mas {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.1), rgba(3, 123, 192, 0.1));
+            border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 25px;
+            color: var(--text-primary, #2c3e50);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-ver-mas::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-ver-mas:hover::before {
+            opacity: 1;
+        }
+
+        .btn-ver-mas:hover {
+            color: white;
+            border-color: #8cbc00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3);
+        }
+
+        .btn-ver-mas i {
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-ver-mas.expandido i {
+            transform: rotate(180deg);
+        }
+
+        .btn-ver-mas span {
+            position: relative;
+            z-index: 1;
+        }
+
+        body.dark-mode .btn-ver-mas {
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.15), rgba(3, 123, 192, 0.15));
+            border-color: var(--dark-border, #2d3139);
+        }
+
+        body.dark-mode .btn-ver-mas:hover {
+            border-color: #8cbc00;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode .usuario-card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode .usuario-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        body.dark-mode .pedido-item {
+            background: var(--dark-bg-secondary, #1a1d29);
+        }
+
+        body.dark-mode .estado-PENDIENTE {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        body.dark-mode .estado-CONFIRMADO {
+            background: rgba(23, 162, 184, 0.2);
+            color: #17a2b8;
+        }
+
+        body.dark-mode .estado-EN_CURSO {
+            background: rgba(111, 66, 193, 0.2);
+            color: #9b7cd6;
+        }
+
+        body.dark-mode .estado-COMPLETADO {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        body.dark-mode .estado-CANCELADO {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        /* Modal Detalles */
+        .modal-detalles {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        body.dark-mode .modal-detalles {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .modal-detalles-content {
+            background: var(--card-bg, white);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+
+        .modal-detalles-header {
+            padding: 25px 30px;
+            border-bottom: 2px solid var(--border-color, #e0e0e0);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(140, 188, 0, 0.05), rgba(3, 123, 192, 0.05));
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-detalles-header h2 {
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-primary, #2c3e50);
+            margin: 0;
+        }
+
+        .modal-detalles-header i {
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 26px;
+        }
+
+        .modal-detalles-body {
+            padding: 30px;
+        }
+
+        .detalle-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: var(--bg-primary, #f8f9fa);
+            border-radius: 12px;
+            border-left: 4px solid #8cbc00;
+            transition: all 0.3s ease;
+        }
+
+        .detalle-section:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.15);
+        }
+
+        .detalle-section h3 {
+            font-size: 16px;
+            margin: 0 0 15px 0;
+            color: var(--text-primary, #2c3e50);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        .detalle-section h3 i {
+            color: #8cbc00;
+        }
+
+        .detalle-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: start;
+        }
+
+        .detalle-label {
+            font-weight: 600;
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detalle-value {
+            color: var(--text-primary, #2c3e50);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .detalle-value.highlight {
+            color: #8cbc00;
+            font-size: 18px;
+        }
+
+        .productos-detalle-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .producto-detalle-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            background: var(--card-bg, white);
+            border-radius: 10px;
+            border: 2px solid var(--border-color, #e0e0e0);
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .producto-detalle-item:hover {
+            border-color: #8cbc00;
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.2);
+        }
+
+        .producto-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid var(--border-color, #e0e0e0);
+        }
+
+        .producto-detalle-info {
+            flex: 1;
+        }
+
+        .producto-detalle-info h4 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: var(--text-primary, #2c3e50);
+        }
+
+        .producto-detalle-info p {
+            margin: 4px 0;
+            font-size: 13px;
+            color: var(--text-secondary, #7f8c8d);
+        }
+
+        .producto-detalle-info p strong {
+            color: var(--text-primary, #2c3e50);
+        }
+
+        .producto-precio-detalle {
+            text-align: right;
+            font-size: 16px;
+            font-weight: 700;
+            color: #8cbc00;
+        }
+
+        .usuario-detalle-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(140, 188, 0, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        body.dark-mode .detalle-section {
+            background: var(--dark-bg-secondary, #1a1d29);
+        }
+
+        body.dark-mode .producto-detalle-item {
+            background: var(--dark-card-bg, #1e2130);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .pedidos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            }
+        }
+
+        @media (max-width: 900px) {
+            .pedidos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+
+            .filter-group {
+                flex: 1 1 100%;
+            }
+
+            .btn-reset-filters {
+                flex: 1 1 100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 15px;
+            }
+
+            .search-filter-panel {
+                padding: 18px;
+            }
+
+            .search-box input {
+                font-size: 14px;
+                padding: 12px 45px 12px 45px;
+            }
+
+            .filters-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .filter-group {
+                min-width: 100%;
+            }
+
+            .btn-reset-filters {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .results-info {
+                font-size: 12px;
+                padding: 10px 14px;
+                flex-wrap: wrap;
+            }
+
+            .results-info span {
+                font-size: 11px;
+            }
+
+            .usuario-header {
+                flex-wrap: wrap;
+            }
+
+            .pedidos-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .pedido-item {
+                padding: 12px;
+            }
+
+            .pedido-info {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .pedido-acciones {
+                grid-template-columns: 1fr;
+            }
+
+            .estado-select,
+            .btn-cambiar,
+            .btn-eliminar,
+            .btn-info,
+            .btn-user,
+            .btn-negociar-transporte {
+                grid-column: 1;
+            }
+
+            .modal-detalles-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .modal-detalles-body {
+                padding: 20px;
+            }
+
+            .detalle-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+
+            .producto-detalle-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .producto-img {
+                margin: 0 auto;
+            }
+
+            .ver-mas-container {
+                margin-top: 15px;
+                padding-top: 12px;
+            }
+
+            .btn-ver-mas {
+                padding: 8px 20px;
+                font-size: 12px;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Estilos para Transporte en Cards */
+        .transporte-card-section {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #8cbc00;
+        }
+        
+        .transporte-badge-card {
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .transporte-sin-propuesta-card {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .transporte-esperando-card {
+            background: #fff3cd;
+            color: #856404;
+            animation: pulse 2s infinite;
+        }
+        
+        .transporte-aceptado-card {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .transporte-rechazado-card {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .transporte-propuesta-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .transporte-info-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #856404;
+            font-weight: 600;
+        }
+        
+        .transporte-info-card i {
+            font-size: 20px;
+        }
+        
+        .transporte-acciones-card {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-aceptar-card,
+        .btn-contraproponer-card {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-aceptar-card {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-aceptar-card:hover {
+            background: linear-gradient(135deg, #218838, #1aa179);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-contraproponer-card {
+            background: linear-gradient(135deg, #ffc107, #ff9800);
+            color: #212529;
+            box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+        }
+        
+        .btn-contraproponer-card:hover {
+            background: linear-gradient(135deg, #e0a800, #f57c00);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        /* Botón de Negociar Transporte */
+        .btn-negociar-transporte {
+            grid-column: 1 / -1;
+            padding: 7px 10px;
+            background: linear-gradient(135deg, #28a745, #17a2b8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+            text-transform: none;
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-negociar-transporte:hover {
+            background: linear-gradient(135deg, #20c997, #17a2b8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-negociar-transporte:active {
+            transform: translateY(0);
+        }
+        
+        .btn-negociar-transporte i {
+            font-size: 12px;
+        }
+        
+        /* Estilos para SweetAlert Modo Oscuro */
+        .swal-dark {
+            background: #1e2130 !important;
+            color: #e8eaed !important;
+        }
+        
+        .swal-dark .swal2-title {
+            color: #e8eaed !important;
+        }
+        
+        .swal-dark .swal2-html-container {
+            color: #9ca3af !important;
+        }
+        
+        .swal-button-animated {
+            transition: all 0.3s ease !important;
+        }
+        
+        .swal-button-animated:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Animaciones para SweetAlert */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            25% {
+                transform: translateX(-10px);
+            }
+            75% {
+                transform: translateX(10px);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(0.95);
+            }
+        }
+        
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes successPulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+        
+        @keyframes ping {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            75%, 100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) translateY(-100%) rotate(45deg);
+            }
+            100% {
+                transform: translateX(100%) translateY(100%) rotate(45deg);
+            }
+        }
+        
+        /* Estilos compactos para SweetAlert */
+        .swal-compact {
+            width: 480px !important;
+            padding: 0 !important;
+        }
+        
+        .swal-compact .swal2-title {
+            font-size: 20px !important;
+            padding: 15px 20px 10px !important;
+            margin: 0 !important;
+        }
+        
+        .swal-compact .swal2-html-container {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        .swal-compact .swal2-actions {
+            margin: 15px 0 !important;
+            padding: 0 20px 20px !important;
+        }
+        
+        .swal-button-premium {
+            font-weight: 700 !important;
+            padding: 12px 30px !important;
+            border-radius: 25px !important;
+            font-size: 14px !important;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        .swal-button-premium:hover {
+            transform: translateY(-3px) scale(1.05) !important;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        .swal-button-premium:active {
+            transform: translateY(-1px) scale(1.02) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/admin-sidebar :: sidebar('pedidos')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1><i class="bi bi-cart-check"></i> Gestión de Pedidos</h1>
+            </div>
+            <div class="topbar-right">
+                <button class="theme-toggle" onclick="toggleDarkMode()" title="Cambiar tema">
+                    <i class="bi bi-moon-stars" id="themeIcon"></i>
+                </button>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <span th:text="${session.usuarioNombre != null ? #strings.substring(session.usuarioNombre, 0, 1) : 'A'}">A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" th:text="${session.usuarioNombre}">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <div id="alertBox" class="alert" style="display:none;"></div>
+            
+            <!-- Panel de Búsqueda y Filtros -->
+            <div class="search-filter-panel">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar por ID, usuario, correo o producto..." onkeyup="filtrarPedidos()">
+                    <button class="btn-clear-search" onclick="limpiarBusqueda()" style="display: none;">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                </div>
+                
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label><i class="bi bi-funnel"></i> Estado:</label>
+                        <select id="filtroEstado" onchange="filtrarPedidos()">
+                            <option value="">Todos los estados</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="CONFIRMADO">Confirmado</option>
+                            <option value="EN_CURSO">En Curso</option>
+                            <option value="COMPLETADO">Completado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label><i class="bi bi-sort-down"></i> Ordenar:</label>
+                        <select id="filtroOrden" onchange="ordenarPedidos()">
+                            <option value="reciente">Más recientes</option>
+                            <option value="antiguo">Más antiguos</option>
+                            <option value="mayor-precio">Mayor precio</option>
+                            <option value="menor-precio">Menor precio</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn-reset-filters" onclick="resetearFiltros()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Limpiar filtros
+                    </button>
+                </div>
+                
+                <div class="results-info" id="resultsInfo">
+                    <i class="bi bi-info-circle"></i>
+                    <span id="resultsText">Cargando...</span>
+                </div>
+            </div>
+            
+            <!-- Mensaje si no hay pedidos -->
+            <div th:if="${alquileresPorUsuario == null || alquileresPorUsuario.isEmpty()}" class="no-pedidos">
+                <i class="bi bi-inbox"></i>
+                <h2>No hay pedidos aún</h2>
+                <p style="color: var(--text-secondary, #95a5a6); margin-top: 10px;">Los pedidos aparecerán aquí cuando los usuarios realicen alquileres</p>
+            </div>
+            
+            <!-- Lista de Usuarios con Pedidos -->
+            <div th:each="entry : ${alquileresPorUsuario}" class="usuario-card" th:with="usuarioNombre=${entry.value[0].usuarioNombre}, usuarioCorreo=${entry.value[0].usuarioCorreo}">
+                <div class="usuario-header">
+                    <div class="usuario-avatar" th:text="${#strings.substring(usuarioNombre, 0, 1)}">U</div>
+                    <div class="usuario-info">
+                        <h3 th:text="${usuarioNombre}">Usuario</h3>
+                        <p th:text="${usuarioCorreo}">correo@ejemplo.com</p>
+                    </div>
+                    <div class="pedidos-counter">
+                        <div class="pedidos-counter-number" th:text="${entry.value.size()}">0</div>
+                        <div class="pedidos-counter-label">PEDIDOS</div>
+                    </div>
+                </div>
+                
+                <!-- Pedidos del usuario en grid -->
+                <div class="pedidos-grid">
+                <div th:each="pedido, iterStat : ${entry.value}" 
+                     class="pedido-item" 
+                     th:classappend="${iterStat.index >= 3 ? 'pedido-oculto' : ''}" 
+                     th:data-usuario-id="${entry.key}">
+                    <div class="pedido-header">
+                        <strong>Pedido #<span th:text="${pedido.id}">ID</span></strong>
+                        <span class="estado-badge" th:class="'estado-badge estado-' + ${pedido.estado}" th:text="${pedido.estado}">PENDIENTE</span>
+                    </div>
+                    
+                    <!-- Información principal del pedido -->
+                    <div class="pedido-info">
+                        <div class="info-item">
+                            <strong><i class="bi bi-currency-dollar"></i> Total</strong>
+                            <span class="info-value">$<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'POINT', 0, 'COMMA')}">0</span></span>
+                        </div>
+                        <div class="info-item">
+                            <strong><i class="bi bi-box-seam"></i> Items</strong>
+                            <span class="info-value" th:text="${pedido.items.size()}">0</span>
+                        </div>
+                        <div class="info-item" th:if="${pedido.fechaInicio != null}">
+                            <strong><i class="bi bi-calendar-check"></i> Inicio</strong>
+                            <span class="info-value" th:text="${#temporals.format(pedido.fechaInicio, 'dd/MM/yyyy')}">01/01/2024</span>
+                        </div>
+                        <div class="info-item" th:if="${pedido.fechaFin != null}">
+                            <strong><i class="bi bi-calendar-x"></i> Fin</strong>
+                            <span class="info-value" th:text="${#temporals.format(pedido.fechaFin, 'dd/MM/yyyy')}">01/01/2024</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Método de Pago -->
+                    <div class="pedido-metodo-pago" style="padding: 8px 10px; background: linear-gradient(135deg, rgba(140, 188, 0, 0.08), rgba(3, 123, 192, 0.08)); border-radius: 8px; display: flex; align-items: center; gap: 8px; font-size: 12px; margin-top: 10px;">
+                        <span th:if="${pedido.pagoContraEntrega != null && pedido.pagoContraEntrega}" 
+                              style="display: flex; align-items: center; gap: 6px; color: #856404; font-weight: 600;">
+                            <i class="bi bi-cash-coin" style="font-size: 16px; color: #ffc107;"></i>
+                            <span>Pago contra entrega</span>
+                        </span>
+                        <span th:if="${pedido.pagoContraEntrega == null || !pedido.pagoContraEntrega}" 
+                              style="display: flex; align-items: center; gap: 6px; color: #0c5460; font-weight: 600;">
+                            <i class="bi bi-credit-card" style="font-size: 16px; color: #17a2b8;"></i>
+                            <span>Pago 50% inicial</span>
+                        </span>
+                    </div>
+
+                    <!-- Dirección de entrega -->
+                    <div class="pedido-direccion" th:if="${pedido.direccionEntrega != null && !#strings.isEmpty(pedido.direccionEntrega)}">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span th:text="${pedido.direccionEntrega}">Dirección de entrega</span>
+                    </div>
+
+                    <!-- Productos resumidos -->
+                    <div class="productos-resumidos">
+                        <strong><i class="bi bi-bag-check"></i> Productos:</strong>
+                        <div class="productos-list">
+                            <span th:each="item, iterStat : ${pedido.items}" class="producto-tag">
+                                <span th:text="${item.nombreProducto}">Producto</span>
+                                <span class="producto-cantidad" th:text="'x' + ${item.cantidad}">x1</span>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="pedido-acciones">
+                        <button onclick="verDetallesPedido(this)" 
+                                th:data-pedido-id="${pedido.id}"
+                                th:data-pedido-json="${#strings.escapeJavaScript(#strings.toString(pedido))}"
+                                th:data-usuario-nombre="${pedido.usuarioNombre}"
+                                th:data-usuario-correo="${pedido.usuarioCorreo}"
+                                th:data-total="${pedido.total}"
+                                th:data-estado="${pedido.estado}"
+                                th:data-fecha-alquiler="${pedido.fechaAlquiler != null ? #temporals.format(pedido.fechaAlquiler, 'dd/MM/yyyy HH:mm') : ''}"
+                                th:data-fecha-inicio="${pedido.fechaInicio != null ? #temporals.format(pedido.fechaInicio, 'dd/MM/yyyy') : ''}"
+                                th:data-fecha-fin="${pedido.fechaFin != null ? #temporals.format(pedido.fechaFin, 'dd/MM/yyyy') : ''}"
+                                th:data-direccion="${pedido.direccionEntrega}"
+                                th:data-notas="${pedido.notasAdicionales}"
+                                th:data-pago-contra-entrega="${pedido.pagoContraEntrega}"
+                                th:data-items-json="${#strings.escapeJavaScript(#strings.toString(pedido.items))}"
+                                class="btn-info">
+                            <i class="bi bi-file-text"></i> Ver Pedido
+                        </button>
+                        <button onclick="verDetallesUsuario(this)" 
+                                th:data-usuario-id="${pedido.usuarioId}"
+                                th:data-usuario-nombre="${pedido.usuarioNombre}"
+                                th:data-usuario-correo="${pedido.usuarioCorreo}"
+                                class="btn-user">
+                            <i class="bi bi-person-circle"></i> Ver Usuario
+                        </button>
+                        
+                        <!-- BOTÓN DE NEGOCIACIÓN DE TRANSPORTE -->
+                        <button onclick="abrirNegociacionTransporte(this)" 
+                                th:data-pedido-id="${pedido.id}"
+                                th:data-estado-transporte="${pedido.estadoTransporte}"
+                                th:data-costo-usuario="${pedido.costoTransporteUsuario}"
+                                th:data-costo-admin="${pedido.costoTransporteAdmin}"
+                                th:data-costo-aceptado="${pedido.costoTransporteAceptado}"
+                                class="btn-negociar-transporte">
+                            <i class="bi bi-truck"></i> Negociar transporte
+                        </button>
+                        
+                        <!-- SECCIÓN DE TRANSPORTE (oculta, solo para referencia) -->
+                        <div class="transporte-card-section" style="display: none;">
+                            <!-- Estado: PENDIENTE o null - Sin propuesta -->
+                            <div th:if="${pedido.estadoTransporte == null || pedido.estadoTransporte == 'PENDIENTE'}" 
+                                 class="transporte-badge-card transporte-sin-propuesta-card">
+                                <i class="bi bi-truck"></i> Sin propuesta de transporte
+                            </div>
+                            
+                            <!-- Estado: PROPUESTA_USUARIO - Usuario propuso -->
+                            <div th:if="${pedido.estadoTransporte == 'PROPUESTA_USUARIO'}" 
+                                 class="transporte-propuesta-card">
+                                <div class="transporte-info-card">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <span>Propuesta del usuario: <strong th:text="'$' + ${#numbers.formatDecimal(pedido.costoTransporteUsuario, 0, 'COMMA', 0, 'POINT')}">$0</strong></span>
+                                </div>
+                                <div class="transporte-acciones-card">
+                                    <button class="btn-aceptar-card" 
+                                            th:attr="data-pedido-id=${pedido.id}"
+                                            onclick="aceptarTransporteUsuarioCard(this.getAttribute('data-pedido-id'))">
+                                        <i class="bi bi-check-circle"></i> Aceptar
+                                    </button>
+                                    <button class="btn-contraproponer-card" 
+                                            th:attr="data-pedido-id=${pedido.id}"
+                                            onclick="contraproponerTransporteCard(this.getAttribute('data-pedido-id'))">
+                                        <i class="bi bi-arrow-left-right"></i> Contraproponer
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Estado: PROPUESTA_ADMIN - Admin propuso, esperando respuesta -->
+                            <div th:if="${pedido.estadoTransporte == 'PROPUESTA_ADMIN'}" 
+                                 class="transporte-badge-card transporte-esperando-card">
+                                <i class="bi bi-clock-history"></i> 
+                                Esperando respuesta del usuario: <strong th:text="'$' + ${#numbers.formatDecimal(pedido.costoTransporteAdmin, 0, 'COMMA', 0, 'POINT')}">$0</strong>
+                            </div>
+                            
+                            <!-- Estado: ACEPTADO - Transporte acordado -->
+                            <div th:if="${pedido.estadoTransporte == 'ACEPTADO'}" 
+                                 class="transporte-badge-card transporte-aceptado-card">
+                                <i class="bi bi-check-circle-fill"></i> 
+                                Transporte acordado: <strong th:text="'$' + ${#numbers.formatDecimal(pedido.costoTransporteAceptado, 0, 'COMMA', 0, 'POINT')}">$0</strong>
+                            </div>
+                            
+                            <!-- Estado: RECHAZADO - Negociación cancelada -->
+                            <div th:if="${pedido.estadoTransporte == 'RECHAZADO'}" 
+                                 class="transporte-badge-card transporte-rechazado-card">
+                                <i class="bi bi-x-circle-fill"></i> Negociación de transporte cancelada
+                            </div>
+                        </div>
+                        
+                        <select th:id="'estado-' + ${pedido.id}" class="estado-select">
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="CONFIRMADO">Confirmado</option>
+                            <option value="EN_CURSO">En Curso</option>
+                            <option value="COMPLETADO">Completado</option>
+                            <option value="CANCELADO">Cancelado</option>
+                        </select>
+                        <button onclick="cambiarEstado(this)" th:data-pedido-id="${pedido.id}" class="btn-cambiar">
+                            <i class="bi bi-arrow-repeat"></i> Cambiar Estado
+                        </button>
+                        <button onclick="eliminarPedido(this)" th:data-pedido-id="${pedido.id}" class="btn-eliminar">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+                </div><!-- Cierre pedidos-grid -->
+                
+                <!-- Botón Ver más (solo si hay más de 3 pedidos) -->
+                <div th:if="${entry.value.size() > 3}" class="ver-mas-container">
+                    <button class="btn-ver-mas" th:data-usuario-id="${entry.key}" onclick="toggleVerMas(this)">
+                        <i class="bi bi-chevron-down"></i>
+                        <span class="ver-mas-text">Ver más (<span th:text="${entry.value.size() - 3}">0</span> pedidos)</span>
+                        <span class="ver-menos-text" style="display: none;">Ver menos</span>
+                    </button>
+                </div>
+            </div><!-- Cierre usuario-card -->
+        </div>
+    </main>
+
+    <!-- Modal Detalles del Pedido -->
+    <div id="modalDetallesPedido" class="modal-detalles">
+        <div class="modal-detalles-content">
+            <div class="modal-detalles-header">
+                <h2><i class="bi bi-file-text"></i> Detalles del Pedido</h2>
+                <button class="modal-close" onclick="cerrarModalPedido()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-detalles-body" id="modalPedidoBody">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles del Usuario -->
+    <div id="modalDetallesUsuario" class="modal-detalles">
+        <div class="modal-detalles-content">
+            <div class="modal-detalles-header">
+                <h2><i class="bi bi-person-circle"></i> Detalles del Usuario</h2>
+                <button class="modal-close" onclick="cerrarModalUsuario()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-detalles-body" id="modalUsuarioBody">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('bi-moon-stars');
+                themeIcon.classList.add('bi-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('bi-sun');
+                themeIcon.classList.add('bi-moon-stars');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (themeIcon) {
+                    themeIcon.classList.remove('bi-moon-stars');
+                    themeIcon.classList.add('bi-sun');
+                }
+            }
+            
+            // Add staggered animation to cards
+            const cards = document.querySelectorAll('.usuario-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('expanded');
+        }
+
+        // Filtrar pedidos
+        function filtrarPedidos() {
+            const searchValue = document.getElementById('searchInput').value.toLowerCase();
+            const estadoValue = document.getElementById('filtroEstado').value;
+            const btnClearSearch = document.querySelector('.btn-clear-search');
+            
+            // Mostrar/ocultar botón de limpiar búsqueda
+            if (searchValue.length > 0) {
+                btnClearSearch.style.display = 'flex';
+            } else {
+                btnClearSearch.style.display = 'none';
+            }
+            
+            const usuariosCards = document.querySelectorAll('.usuario-card');
+            let totalPedidos = 0;
+            let pedidosVisibles = 0;
+            let usuariosVisibles = 0;
+            
+            usuariosCards.forEach(card => {
+                const usuarioNombre = card.querySelector('.usuario-info h3').textContent.toLowerCase();
+                const usuarioCorreo = card.querySelector('.usuario-info p').textContent.toLowerCase();
+                let tieneCoincidencia = false;
+                
+                const pedidos = card.querySelectorAll('.pedido-item');
+                pedidos.forEach(pedido => {
+                    totalPedidos++;
+                    const pedidoId = pedido.querySelector('.pedido-header strong').textContent.toLowerCase();
+                    const estadoBadge = pedido.querySelector('.estado-badge').textContent;
+                    const productos = pedido.querySelectorAll('.producto-tag span:first-child');
+                    let productosTexto = '';
+                    productos.forEach(p => productosTexto += p.textContent.toLowerCase() + ' ');
+                    
+                    // Filtrar por búsqueda
+                    const coincideBusqueda = searchValue === '' || 
+                        pedidoId.includes(searchValue) ||
+                        usuarioNombre.includes(searchValue) ||
+                        usuarioCorreo.includes(searchValue) ||
+                        productosTexto.includes(searchValue);
+                    
+                    // Filtrar por estado
+                    const coincideEstado = estadoValue === '' || estadoBadge === estadoValue;
+                    
+                    if (coincideBusqueda && coincideEstado) {
+                        pedido.style.display = 'flex';
+                        pedidosVisibles++;
+                        tieneCoincidencia = true;
+                    } else {
+                        pedido.style.display = 'none';
+                    }
+                });
+                
+                // Mostrar/ocultar usuario completo
+                if (tieneCoincidencia) {
+                    card.style.display = 'block';
+                    usuariosVisibles++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Actualizar info de resultados
+            actualizarResultadosInfo(pedidosVisibles, totalPedidos, usuariosVisibles);
+        }
+
+        // Ordenar pedidos
+        function ordenarPedidos() {
+            const ordenValue = document.getElementById('filtroOrden').value;
+            const usuariosCards = document.querySelectorAll('.usuario-card');
+            
+            usuariosCards.forEach(card => {
+                const pedidosGrid = card.querySelector('.pedidos-grid');
+                const pedidos = Array.from(pedidosGrid.querySelectorAll('.pedido-item'));
+                
+                pedidos.sort((a, b) => {
+                    const totalA = parseFloat(a.querySelector('.info-item span.info-value').textContent.replace('$', '').replace(/,/g, ''));
+                    const totalB = parseFloat(b.querySelector('.info-item span.info-value').textContent.replace('$', '').replace(/,/g, ''));
+                    
+                    switch(ordenValue) {
+                        case 'mayor-precio':
+                            return totalB - totalA;
+                        case 'menor-precio':
+                            return totalA - totalB;
+                        case 'reciente':
+                            // Mantenemos el orden actual (más reciente primero)
+                            return 0;
+                        case 'antiguo':
+                            // Invertimos el orden
+                            return 0;
+                        default:
+                            return 0;
+                    }
+                });
+                
+                // Reinsertar pedidos ordenados
+                pedidos.forEach(pedido => pedidosGrid.appendChild(pedido));
+            });
+        }
+
+        // Limpiar búsqueda
+        function limpiarBusqueda() {
+            document.getElementById('searchInput').value = '';
+            filtrarPedidos();
+        }
+
+        // Resetear filtros
+        function resetearFiltros() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('filtroOrden').value = 'reciente';
+            document.querySelector('.btn-clear-search').style.display = 'none';
+            
+            const usuariosCards = document.querySelectorAll('.usuario-card');
+            usuariosCards.forEach(card => {
+                card.style.display = 'block';
+                const pedidos = card.querySelectorAll('.pedido-item');
+                pedidos.forEach(pedido => {
+                    pedido.style.display = 'flex';
+                });
+            });
+            
+            const totalPedidos = document.querySelectorAll('.pedido-item').length;
+            const totalUsuarios = usuariosCards.length;
+            actualizarResultadosInfo(totalPedidos, totalPedidos, totalUsuarios);
+        }
+
+        // Actualizar info de resultados
+        function actualizarResultadosInfo(visibles, total, usuarios) {
+            const resultsText = document.getElementById('resultsText');
+            if (visibles === total) {
+                resultsText.textContent = `${total} pedidos - ${usuarios} usuarios`;
+            } else {
+                resultsText.textContent = `${visibles} de ${total} pedidos encontrados`;
+            }
+        }
+
+        // Inicializar info de resultados al cargar
+        document.addEventListener('DOMContentLoaded', () => {
+            const totalPedidos = document.querySelectorAll('.pedido-item').length;
+            const totalUsuarios = document.querySelectorAll('.usuario-card').length;
+            actualizarResultadosInfo(totalPedidos, totalPedidos, totalUsuarios);
+        });
+
+        // Toggle Ver más/Ver menos pedidos
+        function toggleVerMas(btn) {
+            const usuarioId = btn.dataset.usuarioId;
+            const usuarioCard = btn.closest('.usuario-card');
+            const pedidosOcultos = usuarioCard.querySelectorAll('.pedido-oculto');
+            const verMasText = btn.querySelector('.ver-mas-text');
+            const verMenosText = btn.querySelector('.ver-menos-text');
+            const icon = btn.querySelector('i');
+            
+            if (btn.classList.contains('expandido')) {
+                // Colapsar - ocultar pedidos adicionales
+                pedidosOcultos.forEach((pedido, index) => {
+                    setTimeout(() => {
+                        pedido.classList.remove('mostrar');
+                    }, index * 50);
+                });
+                
+                verMasText.style.display = 'inline';
+                verMenosText.style.display = 'none';
+                btn.classList.remove('expandido');
+                
+                // Scroll suave hacia el usuario
+                setTimeout(() => {
+                    usuarioCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            } else {
+                // Expandir - mostrar pedidos adicionales
+                pedidosOcultos.forEach((pedido, index) => {
+                    setTimeout(() => {
+                        pedido.classList.add('mostrar');
+                        pedido.style.animationDelay = `${index * 0.05}s`;
+                    }, index * 50);
+                });
+                
+                verMasText.style.display = 'none';
+                verMenosText.style.display = 'inline';
+                btn.classList.add('expandido');
+            }
+        }
+
+        // Ver detalles del pedido
+        function verDetallesPedido(btn) {
+            const pedidoId = btn.dataset.pedidoId;
+            const usuarioNombre = btn.dataset.usuarioNombre;
+            const usuarioCorreo = btn.dataset.usuarioCorreo;
+            const total = btn.dataset.total;
+            const estado = btn.dataset.estado;
+            const fechaAlquiler = btn.dataset.fechaAlquiler;
+            const fechaInicio = btn.dataset.fechaInicio;
+            const fechaFin = btn.dataset.fechaFin;
+            const direccion = btn.dataset.direccion;
+            const notas = btn.dataset.notas;
+            const pagoContraEntrega = btn.dataset.pagoContraEntrega === 'true';
+            
+            // Obtener items del pedido
+            const pedidoCard = btn.closest('.pedido-item');
+            const productoTags = pedidoCard.querySelectorAll('.producto-tag');
+            
+            let productosHTML = '<div class="productos-detalle-grid">';
+            productoTags.forEach(tag => {
+                const nombreProducto = tag.querySelector('span:first-child').textContent;
+                const cantidad = tag.querySelector('.producto-cantidad').textContent.replace('x', '');
+                productosHTML += `
+                    <div class="producto-detalle-item">
+                        <div class="producto-detalle-info">
+                            <h4>${nombreProducto}</h4>
+                            <p><strong>Cantidad:</strong> ${cantidad} unidades</p>
+                        </div>
+                    </div>
+                `;
+            });
+            productosHTML += '</div>';
+            
+            const modalBody = document.getElementById('modalPedidoBody');
+            modalBody.innerHTML = `
+                <div class="detalle-section">
+                    <h3><i class="bi bi-info-circle"></i> Información General</h3>
+                    <div class="detalle-row">
+                        <span class="detalle-label">ID Pedido:</span>
+                        <span class="detalle-value">#${pedidoId}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Estado:</span>
+                        <span class="detalle-value estado-badge estado-${estado}">${estado}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Total:</span>
+                        <span class="detalle-value highlight">$${parseFloat(total).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Método de Pago:</span>
+                        <span class="detalle-value" style="display: flex; align-items: center; gap: 8px;">
+                            ${pagoContraEntrega 
+                                ? '<i class="bi bi-cash-coin" style="color: #ffc107; font-size: 18px;"></i><span style="color: #856404; font-weight: 700;">Pago contra entrega</span>' 
+                                : '<i class="bi bi-credit-card" style="color: #17a2b8; font-size: 18px;"></i><span style="color: #0c5460; font-weight: 700;">Pago 50% inicial</span>'}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detalle-section">
+                    <h3><i class="bi bi-person"></i> Cliente</h3>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Nombre:</span>
+                        <span class="detalle-value">${usuarioNombre}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Correo:</span>
+                        <span class="detalle-value">${usuarioCorreo}</span>
+                    </div>
+                </div>
+
+                <div class="detalle-section">
+                    <h3><i class="bi bi-calendar-event"></i> Fechas</h3>
+                    ${fechaAlquiler ? `<div class="detalle-row">
+                        <span class="detalle-label">Fecha Pedido:</span>
+                        <span class="detalle-value">${fechaAlquiler}</span>
+                    </div>` : ''}
+                    ${fechaInicio ? `<div class="detalle-row">
+                        <span class="detalle-label">Fecha Inicio:</span>
+                        <span class="detalle-value">${fechaInicio}</span>
+                    </div>` : ''}
+                    ${fechaFin ? `<div class="detalle-row">
+                        <span class="detalle-label">Fecha Fin:</span>
+                        <span class="detalle-value">${fechaFin}</span>
+                    </div>` : ''}
+                </div>
+
+                ${direccion ? `<div class="detalle-section">
+                    <h3><i class="bi bi-geo-alt"></i> Dirección de Entrega</h3>
+                    <div class="detalle-value">${direccion}</div>
+                </div>` : ''}
+
+                ${notas && notas !== 'null' ? `<div class="detalle-section">
+                    <h3><i class="bi bi-sticky"></i> Notas Adicionales</h3>
+                    <div class="detalle-value">${notas}</div>
+                </div>` : ''}
+
+                <div class="detalle-section">
+                    <h3><i class="bi bi-box-seam"></i> Productos</h3>
+                    ${productosHTML}
+                </div>
+            `;
+            
+            document.getElementById('modalDetallesPedido').style.display = 'flex';
+        }
+
+        function cerrarModalPedido() {
+            document.getElementById('modalDetallesPedido').style.display = 'none';
+        }
+
+        // Ver detalles del usuario
+        function verDetallesUsuario(btn) {
+            const usuarioId = btn.dataset.usuarioId;
+            const usuarioNombre = btn.dataset.usuarioNombre;
+            const usuarioCorreo = btn.dataset.usuarioCorreo;
+            
+            // Contar pedidos del usuario
+            const usuarioCard = btn.closest('.usuario-card');
+            const pedidosCount = usuarioCard.querySelectorAll('.pedido-item').length;
+            
+            // Calcular total de todos los pedidos
+            let totalGeneral = 0;
+            const totales = usuarioCard.querySelectorAll('.info-item span.info-value');
+            totales.forEach(item => {
+                const text = item.textContent.replace('$', '').replace(/,/g, '');
+                const num = parseFloat(text);
+                if (!isNaN(num)) {
+                    totalGeneral += num;
+                }
+            });
+            
+            const inicial = usuarioNombre.charAt(0).toUpperCase();
+            
+            const modalBody = document.getElementById('modalUsuarioBody');
+            modalBody.innerHTML = `
+                <div class="usuario-detalle-avatar">${inicial}</div>
+                
+                <div class="detalle-section">
+                    <h3><i class="bi bi-person-badge"></i> Información del Usuario</h3>
+                    <div class="detalle-row">
+                        <span class="detalle-label">ID Usuario:</span>
+                        <span class="detalle-value">${usuarioId}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Nombre:</span>
+                        <span class="detalle-value">${usuarioNombre}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Correo:</span>
+                        <span class="detalle-value">${usuarioCorreo}</span>
+                    </div>
+                </div>
+
+                <div class="detalle-section">
+                    <h3><i class="bi bi-graph-up"></i> Estadísticas de Pedidos</h3>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Total Pedidos:</span>
+                        <span class="detalle-value highlight">${pedidosCount}</span>
+                    </div>
+                    <div class="detalle-row">
+                        <span class="detalle-label">Total Gastado:</span>
+                        <span class="detalle-value highlight">$${totalGeneral.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalDetallesUsuario').style.display = 'flex';
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modalDetallesUsuario').style.display = 'none';
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const modalPedido = document.getElementById('modalDetallesPedido');
+            const modalUsuario = document.getElementById('modalDetallesUsuario');
+            if (event.target === modalPedido) {
+                cerrarModalPedido();
+            }
+            if (event.target === modalUsuario) {
+                cerrarModalUsuario();
+            }
+        }
+
+        // Cerrar modales con tecla Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                cerrarModalPedido();
+                cerrarModalUsuario();
+            }
+        });
+        
+        function cambiarEstado(btn) {
+            const alquilerId = btn.getAttribute('data-pedido-id');
+            const selectElement = document.getElementById('estado-' + alquilerId);
+            const nuevoEstado = selectElement.value;
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            Swal.fire({
+                title: '¿Cambiar estado?',
+                html: `¿Deseas cambiar el estado del pedido <strong>#${alquilerId}</strong> a <strong>${nuevoEstado}</strong>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#8cbc00',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-check-circle"></i> Sí, cambiar',
+                cancelButtonText: '<i class="bi bi-x-circle"></i> Cancelar',
+                background: isDark ? '#1e2130' : '#ffffff',
+                color: isDark ? '#e8eaed' : '#2c3e50',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp animate__faster'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Actualizando estado...',
+                        text: 'Por favor espera',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        background: isDark ? '#1e2130' : '#ffffff',
+                        color: isDark ? '#e8eaed' : '#2c3e50',
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/admin/alquiler/cambiar-estado', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'alquilerId=' + alquilerId + '&nuevoEstado=' + nuevoEstado + '&csrfToken=' + CSRF_TOKEN
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Estado actualizado!',
+                                text: data.message,
+                                confirmButtonColor: '#8cbc00',
+                                background: isDark ? '#1e2130' : '#ffffff',
+                                color: isDark ? '#e8eaed' : '#2c3e50',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Error al actualizar el estado',
+                                confirmButtonColor: '#e74c3c',
+                                background: isDark ? '#1e2130' : '#ffffff',
+                                color: isDark ? '#e8eaed' : '#2c3e50'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor: ' + error,
+                            confirmButtonColor: '#e74c3c',
+                            background: isDark ? '#1e2130' : '#ffffff',
+                            color: isDark ? '#e8eaed' : '#2c3e50'
+                        });
+                    });
+                }
+            });
+        }
+        
+        function eliminarPedido(btn) {
+            const alquilerId = btn.getAttribute('data-pedido-id');
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            Swal.fire({
+                title: '¿Eliminar pedido?',
+                html: `¿Estás seguro de que deseas <strong style="color: #e74c3c;">ELIMINAR</strong> el pedido <strong>#${alquilerId}</strong>?<br><br><span style="color: #e74c3c; font-weight: 600;">Esta acción no se puede deshacer.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e74c3c',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-trash"></i> Sí, eliminar',
+                cancelButtonText: '<i class="bi bi-x-circle"></i> Cancelar',
+                background: isDark ? '#1e2130' : '#ffffff',
+                color: isDark ? '#e8eaed' : '#2c3e50',
+                showClass: {
+                    popup: 'animate__animated animate__shakeX'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp animate__faster'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Eliminando pedido...',
+                        text: 'Por favor espera',
+                        icon: 'info',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        background: isDark ? '#1e2130' : '#ffffff',
+                        color: isDark ? '#e8eaed' : '#2c3e50',
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch('/admin/alquiler/eliminar-pedido', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'alquilerId=' + alquilerId
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Pedido eliminado!',
+                                text: data.message,
+                                confirmButtonColor: '#8cbc00',
+                                background: isDark ? '#1e2130' : '#ffffff',
+                                color: isDark ? '#e8eaed' : '#2c3e50',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Error al eliminar el pedido',
+                                confirmButtonColor: '#e74c3c',
+                                background: isDark ? '#1e2130' : '#ffffff',
+                                color: isDark ? '#e8eaed' : '#2c3e50'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de conexión',
+                            text: 'No se pudo conectar con el servidor: ' + error,
+                            confirmButtonColor: '#e74c3c',
+                            background: isDark ? '#1e2130' : '#ffffff',
+                            color: isDark ? '#e8eaed' : '#2c3e50'
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Aceptar propuesta del usuario
+        function aceptarTransporteUsuarioCard(pedidoId) {
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            Swal.fire({
+                html: `
+                    <div style="text-align: center; padding: 20px; animation: fadeInUp 0.4s ease;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 20px;">
+                            <div style="width: 90px; height: 90px; background: linear-gradient(135deg, ${isDark ? 'rgba(40, 167, 69, 0.2)' : 'rgba(40, 167, 69, 0.15)'}, ${isDark ? 'rgba(32, 201, 151, 0.2)' : 'rgba(32, 201, 151, 0.15)'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s ease infinite;">
+                                <i class="bi bi-question-circle-fill" style="font-size: 45px; color: #28a745; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></i>
+                            </div>
+                            <div style="position: absolute; top: -5px; right: -5px; width: 30px; height: 30px; background: linear-gradient(135deg, #ffc107, #ff9800); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: bounce 1s ease infinite; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);">
+                                <i class="bi bi-exclamation-lg" style="font-size: 14px; color: white; font-weight: 900;"></i>
+                            </div>
+                        </div>
+                        
+                        <h3 style="color: ${isDark ? '#28a745' : '#155724'}; margin: 15px 0 15px; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">¿Aceptar Propuesta?</h3>
+                        
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 14px; line-height: 1.6; margin: 15px 0;">
+                            Se aceptará el costo de transporte propuesto por el usuario y se agregará al total del pedido.
+                        </p>
+                        
+                        <div style="background: ${isDark ? 'rgba(40, 167, 69, 0.1)' : 'rgba(40, 167, 69, 0.08)'}; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid #28a745;">
+                            <p style="color: ${isDark ? '#28a745' : '#155724'}; font-size: 13px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
+                                <i class="bi bi-info-circle-fill" style="font-size: 16px;"></i>
+                                <span>Esta acción actualizará el total del pedido</span>
+                            </p>
+                        </div>
+                    </div>
+                `,
+                width: '480px',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-check-circle-fill"></i> Sí, Aceptar',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Cancelar',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                customClass: {
+                    popup: isDark ? 'swal-dark swal-compact' : 'swal-compact',
+                    confirmButton: 'swal-button-premium',
+                    cancelButton: 'swal-button-premium'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__zoomIn animate__faster'
+                },
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/admin/alquiler/aceptar-transporte-usuario', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `alquilerId=${pedidoId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const isDark = document.body.classList.contains('dark-mode');
+                            
+                            Swal.fire({
+                                html: `
+                                    <div style="text-align: center; padding: 20px; animation: zoomIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
+                                        <div style="position: relative; display: inline-block; margin-bottom: 20px;">
+                                            <div style="width: 90px; height: 90px; background: linear-gradient(135deg, ${isDark ? 'rgba(40, 167, 69, 0.2)' : 'rgba(40, 167, 69, 0.15)'}, ${isDark ? 'rgba(32, 201, 151, 0.2)' : 'rgba(32, 201, 151, 0.15)'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: successPulse 1.5s ease infinite;">
+                                                <i class="bi bi-check-circle-fill" style="font-size: 45px; color: #28a745; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></i>
+                                            </div>
+                                            <div style="position: absolute; top: -5px; right: -5px; width: 30px; height: 30px; background: linear-gradient(135deg, #ffc107, #ff9800); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: ping 1s ease-in-out infinite; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);">
+                                                <i class="bi bi-star-fill" style="font-size: 12px; color: white;"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <h3 style="color: ${isDark ? '#28a745' : '#155724'}; margin: 15px 0 20px; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">¡Propuesta Aceptada!</h3>
+                                        
+                                        <div style="background: ${isDark ? 'linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.1))' : 'linear-gradient(135deg, #d4edda, #c3e6cb)'}; padding: 20px; border-radius: 12px; margin: 15px 0; border: 2px solid ${isDark ? 'rgba(40, 167, 69, 0.4)' : '#28a745'}; box-shadow: 0 8px 20px ${isDark ? 'rgba(40, 167, 69, 0.15)' : 'rgba(40, 167, 69, 0.25)'}; position: relative; overflow: hidden;">
+                                            <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: shimmer 3s linear infinite;"></div>
+                                            <p style="font-size: 13px; color: ${isDark ? '#28a745' : '#155724'}; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; opacity: 0.9;">Costo Acordado</p>
+                                            <p style="font-size: 38px; font-weight: 900; color: ${isDark ? '#28a745' : '#155724'}; margin: 0 0 15px 0; text-shadow: 0 2px 8px rgba(40, 167, 69, 0.3); position: relative; z-index: 1;">$${data.costoTransporteAceptado.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                            <div style="height: 1px; background: ${isDark ? 'rgba(40, 167, 69, 0.3)' : 'rgba(40, 167, 69, 0.2)'}; margin: 15px 0;"></div>
+                                            <p style="font-size: 13px; color: ${isDark ? '#28a745' : '#155724'}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; opacity: 0.9;">Nuevo Total</p>
+                                            <p style="font-size: 32px; font-weight: 900; color: ${isDark ? '#28a745' : '#155724'}; margin: 0; text-shadow: 0 2px 8px rgba(40, 167, 69, 0.3); position: relative; z-index: 1;">$${data.totalNuevo.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                        </div>
+                                        
+                                        <div style="background: ${isDark ? 'rgba(40, 167, 69, 0.1)' : 'rgba(40, 167, 69, 0.08)'}; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid #28a745;">
+                                            <p style="color: ${isDark ? '#28a745' : '#155724'}; font-size: 13px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600;">
+                                                <i class="bi bi-check2-circle" style="font-size: 16px;"></i>
+                                                <span>El total del pedido ha sido actualizado</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                `,
+                                width: '480px',
+                                showConfirmButton: true,
+                                confirmButtonText: '<i class="bi bi-check-lg"></i> Perfecto',
+                                confirmButtonColor: '#28a745',
+                                customClass: {
+                                    popup: isDark ? 'swal-dark swal-compact' : 'swal-compact',
+                                    confirmButton: 'swal-button-premium'
+                                },
+                                showClass: {
+                                    popup: 'animate__animated animate__zoomIn animate__faster'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Conexión',
+                            text: 'No se pudo conectar con el servidor',
+                            confirmButtonColor: '#e74c3c'
+                        });
+                    });
+                }
+            });
+        }
+        
+        // Abrir modal de negociación de transporte
+        function abrirNegociacionTransporte(button) {
+            const pedidoId = button.getAttribute('data-pedido-id');
+            const estadoTransporte = button.getAttribute('data-estado-transporte');
+            const costoUsuario = button.getAttribute('data-costo-usuario');
+            const costoAdmin = button.getAttribute('data-costo-admin');
+            const costoAceptado = button.getAttribute('data-costo-aceptado');
+            
+            // Detectar modo oscuro
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            let htmlContent = '';
+            let botones = {};
+            
+            // Determinar contenido según el estado
+            if (!estadoTransporte || estadoTransporte === 'null' || estadoTransporte === 'PENDIENTE') {
+                // Sin propuesta
+                htmlContent = `
+                    <div style="text-align: center; padding: 30px 20px; animation: fadeInUp 0.5s ease;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 25px;">
+                            <div style="width: 100px; height: 100px; background: ${isDark ? 'rgba(108, 117, 125, 0.1)' : 'rgba(108, 117, 125, 0.1)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                                <i class="bi bi-truck" style="font-size: 50px; color: ${isDark ? '#9ca3af' : '#6c757d'};"></i>
+                            </div>
+                        </div>
+                        <h3 style="color: ${isDark ? '#e8eaed' : '#2c3e50'}; margin-bottom: 15px; font-size: 24px; font-weight: 700;">Sin Propuesta de Transporte</h3>
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 15px; line-height: 1.6;">El usuario aún no ha propuesto un costo de transporte para este pedido.</p>
+                    </div>
+                `;
+                botones = {
+                    confirmButtonText: '<i class="bi bi-x-lg"></i> Cerrar',
+                    confirmButtonColor: '#6c757d',
+                    customClass: {
+                        popup: isDark ? 'swal-dark' : '',
+                        confirmButton: 'swal-button-animated'
+                    }
+                };
+            } else if (estadoTransporte === 'PROPUESTA_USUARIO') {
+                // Usuario propuso
+                htmlContent = `
+                    <div style="text-align: center; padding: 30px 20px; animation: fadeInUp 0.5s ease;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 25px;">
+                            <div style="width: 100px; height: 100px; background: ${isDark ? 'rgba(255, 193, 7, 0.15)' : 'rgba(255, 193, 7, 0.1)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: bounce 1s ease infinite;">
+                                <i class="bi bi-exclamation-triangle-fill" style="font-size: 50px; color: #ffc107;"></i>
+                            </div>
+                        </div>
+                        <h3 style="color: ${isDark ? '#ffc107' : '#856404'}; margin-bottom: 20px; font-size: 24px; font-weight: 700;">Propuesta del Usuario</h3>
+                        <div style="background: ${isDark ? 'rgba(255, 193, 7, 0.15)' : '#fff3cd'}; padding: 25px; border-radius: 15px; margin: 20px 0; border: 2px solid ${isDark ? 'rgba(255, 193, 7, 0.3)' : '#ffc107'}; box-shadow: 0 4px 15px ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.2)'};">
+                            <p style="font-size: 14px; color: ${isDark ? '#ffc107' : '#856404'}; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Costo Propuesto</p>
+                            <p style="font-size: 42px; font-weight: 800; color: ${isDark ? '#ffc107' : '#856404'}; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">$${parseFloat(costoUsuario).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 15px; margin-top: 20px;">¿Qué deseas hacer con esta propuesta?</p>
+                    </div>
+                `;
+                botones = {
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-check-circle-fill"></i> Aceptar',
+                    denyButtonText: '<i class="bi bi-arrow-left-right"></i> Contraproponer',
+                    cancelButtonText: '<i class="bi bi-x-lg"></i> Cerrar',
+                    confirmButtonColor: '#28a745',
+                    denyButtonColor: '#ffc107',
+                    cancelButtonColor: '#6c757d',
+                    customClass: {
+                        popup: isDark ? 'swal-dark' : '',
+                        confirmButton: 'swal-button-animated',
+                        denyButton: 'swal-button-animated',
+                        cancelButton: 'swal-button-animated'
+                    }
+                };
+            } else if (estadoTransporte === 'PROPUESTA_ADMIN') {
+                // Admin propuso, esperando
+                htmlContent = `
+                    <div style="text-align: center; padding: 30px 20px; animation: fadeInUp 0.5s ease;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 25px;">
+                            <div style="width: 100px; height: 100px; background: ${isDark ? 'rgba(255, 193, 7, 0.15)' : 'rgba(255, 193, 7, 0.1)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                                <i class="bi bi-clock-history" style="font-size: 50px; color: #ffc107;"></i>
+                            </div>
+                        </div>
+                        <h3 style="color: ${isDark ? '#ffc107' : '#856404'}; margin-bottom: 20px; font-size: 24px; font-weight: 700;">Esperando Respuesta</h3>
+                        <div style="background: ${isDark ? 'rgba(255, 193, 7, 0.15)' : '#fff3cd'}; padding: 25px; border-radius: 15px; margin: 20px 0; border: 2px solid ${isDark ? 'rgba(255, 193, 7, 0.3)' : '#ffc107'}; box-shadow: 0 4px 15px ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.2)'};">
+                            <p style="font-size: 14px; color: ${isDark ? '#ffc107' : '#856404'}; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Tu Contrapropuesta</p>
+                            <p style="font-size: 42px; font-weight: 800; color: ${isDark ? '#ffc107' : '#856404'}; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">$${parseFloat(costoAdmin).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 15px; margin-top: 20px;">El usuario debe aceptar o rechazar tu propuesta.</p>
+                    </div>
+                `;
+                botones = {
+                    confirmButtonText: '<i class="bi bi-x-lg"></i> Cerrar',
+                    confirmButtonColor: '#ffc107',
+                    customClass: {
+                        popup: isDark ? 'swal-dark' : '',
+                        confirmButton: 'swal-button-animated'
+                    }
+                };
+            } else if (estadoTransporte === 'ACEPTADO') {
+                // Acordado
+                htmlContent = `
+                    <div style="text-align: center; padding: 20px; animation: zoomIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
+                        <div style="position: relative; display: inline-block; margin-bottom: 15px;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, ${isDark ? 'rgba(40, 167, 69, 0.2)' : 'rgba(40, 167, 69, 0.15)'}, ${isDark ? 'rgba(32, 201, 151, 0.2)' : 'rgba(32, 201, 151, 0.15)'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: successPulse 1.5s ease infinite; box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);">
+                                <i class="bi bi-check-circle-fill" style="font-size: 40px; color: #28a745; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></i>
+                            </div>
+                            <div style="position: absolute; top: -5px; right: -5px; width: 25px; height: 25px; background: #ffc107; border-radius: 50%; animation: ping 1s ease-in-out infinite;"></div>
+                        </div>
+                        <h3 style="color: ${isDark ? '#28a745' : '#155724'}; margin: 15px 0 10px; font-size: 22px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">¡Transporte Acordado!</h3>
+                        <div style="background: ${isDark ? 'linear-gradient(135deg, rgba(40, 167, 69, 0.15), rgba(32, 201, 151, 0.1))' : 'linear-gradient(135deg, #d4edda, #c3e6cb)'}; padding: 20px; border-radius: 12px; margin: 15px 0; border: 2px solid ${isDark ? 'rgba(40, 167, 69, 0.4)' : '#28a745'}; box-shadow: 0 8px 20px ${isDark ? 'rgba(40, 167, 69, 0.15)' : 'rgba(40, 167, 69, 0.25)'}; position: relative; overflow: hidden;">
+                            <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: shimmer 3s linear infinite;"></div>
+                            <p style="font-size: 11px; color: ${isDark ? '#28a745' : '#155724'}; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; opacity: 0.8;">Costo Acordado</p>
+                            <p style="font-size: 36px; font-weight: 900; color: ${isDark ? '#28a745' : '#155724'}; margin: 0; text-shadow: 0 2px 8px rgba(40, 167, 69, 0.3); position: relative; z-index: 1;">$${parseFloat(costoAceptado).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                        <p style="color: ${isDark ? '#28a745' : '#155724'}; font-size: 13px; margin-top: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                            <i class="bi bi-check2-circle" style="font-size: 16px;"></i> Agregado al total del pedido
+                        </p>
+                    </div>
+                `;
+                botones = {
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Perfecto',
+                    confirmButtonColor: '#28a745',
+                    customClass: {
+                        popup: isDark ? 'swal-dark swal-compact' : 'swal-compact',
+                        confirmButton: 'swal-button-premium'
+                    },
+                    showClass: {
+                        popup: 'animate__animated animate__zoomIn animate__faster'
+                    }
+                };
+            } else if (estadoTransporte === 'RECHAZADO') {
+                // Rechazado
+                htmlContent = `
+                    <div style="text-align: center; padding: 30px 20px; animation: fadeInUp 0.5s ease;">
+                        <div style="position: relative; display: inline-block; margin-bottom: 25px;">
+                            <div style="width: 100px; height: 100px; background: ${isDark ? 'rgba(220, 53, 69, 0.15)' : 'rgba(220, 53, 69, 0.1)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: shake 0.5s ease;">
+                                <i class="bi bi-x-circle-fill" style="font-size: 50px; color: #dc3545;"></i>
+                            </div>
+                        </div>
+                        <h3 style="color: ${isDark ? '#dc3545' : '#721c24'}; margin-bottom: 15px; font-size: 24px; font-weight: 700;">Negociación Cancelada</h3>
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 15px; line-height: 1.6;">La negociación de transporte fue rechazada.</p>
+                    </div>
+                `;
+                botones = {
+                    confirmButtonText: '<i class="bi bi-x-lg"></i> Cerrar',
+                    confirmButtonColor: '#dc3545',
+                    customClass: {
+                        popup: isDark ? 'swal-dark' : '',
+                        confirmButton: 'swal-button-animated'
+                    }
+                };
+            }
+            
+            // Mostrar SweetAlert
+            Swal.fire({
+                title: '🚚 Negociación de Transporte',
+                html: htmlContent,
+                width: '600px',
+                ...botones
+            }).then((result) => {
+                if (result.isConfirmed && estadoTransporte === 'PROPUESTA_USUARIO') {
+                    // Aceptar propuesta
+                    aceptarTransporteUsuarioCard(pedidoId);
+                } else if (result.isDenied && estadoTransporte === 'PROPUESTA_USUARIO') {
+                    // Contraproponer
+                    contraproponerTransporteCard(pedidoId);
+                }
+            });
+        }
+        
+        // Contraproponer costo de transporte
+        function contraproponerTransporteCard(pedidoId) {
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            Swal.fire({
+                title: '<i class="bi bi-arrow-left-right"></i> Contraproponer',
+                html: `
+                    <div style="padding: 5px; animation: fadeInUp 0.4s ease;">
+                        <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 13px; margin-bottom: 15px; line-height: 1.4;">
+                            Ingresa tu contrapropuesta de costo de transporte
+                        </p>
+                        <div style="position: relative; margin-bottom: 12px; display: flex; justify-content: center;">
+                            <div style="position: relative; width: 70%; max-width: 280px;">
+                                <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 700; color: ${isDark ? '#ffc107' : '#856404'}; z-index: 1;">$</div>
+                                <input type="number" 
+                                       id="costoContrapropuesta" 
+                                       class="swal2-input" 
+                                       placeholder="50000" 
+                                       min="0" 
+                                       step="1000"
+                                       style="
+                                           width: 100% !important;
+                                           padding: 10px 12px 10px 30px !important;
+                                           font-size: 16px !important;
+                                           font-weight: 700 !important;
+                                           text-align: left !important;
+                                           border: 2px solid ${isDark ? 'rgba(255, 193, 7, 0.3)' : '#ffc107'} !important;
+                                           border-radius: 10px !important;
+                                           background: ${isDark ? 'rgba(255, 193, 7, 0.05)' : 'rgba(255, 193, 7, 0.05)'} !important;
+                                           color: ${isDark ? '#ffc107' : '#856404'} !important;
+                                           transition: all 0.3s ease !important;
+                                           box-shadow: 0 3px 10px ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.15)'} !important;
+                                           margin: 0 !important;
+                                           height: 45px !important;
+                                       "
+                                       onfocus="this.style.borderColor='#ffc107'; this.style.boxShadow='0 4px 15px rgba(255, 193, 7, 0.25)';"
+                                       onblur="this.style.borderColor='${isDark ? 'rgba(255, 193, 7, 0.3)' : '#ffc107'}'; this.style.boxShadow='0 3px 10px ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.15)'}';">
+                            </div>
+                        </div>
+                        <p style="color: ${isDark ? '#6c757d' : '#9ca3af'}; font-size: 11px; margin-top: 8px; margin-bottom: 0;">
+                            <i class="bi bi-info-circle"></i> El usuario podrá aceptar o rechazar
+                        </p>
+                    </div>
+                `,
+                width: '420px',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-send-fill"></i> Enviar Propuesta',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Cancelar',
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                customClass: {
+                    popup: isDark ? 'swal-dark swal-compact' : 'swal-compact',
+                    confirmButton: 'swal-button-premium',
+                    cancelButton: 'swal-button-premium'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__zoomIn animate__faster'
+                },
+                didOpen: () => {
+                    const input = document.getElementById('costoContrapropuesta');
+                    input.focus();
+                    // Formatear número mientras escribe
+                    input.addEventListener('input', function(e) {
+                        if (this.value) {
+                            this.style.color = '#ffc107';
+                            this.style.fontWeight = '900';
+                        }
+                    });
+                },
+                preConfirm: () => {
+                    const costo = document.getElementById('costoContrapropuesta').value;
+                    if (!costo || costo <= 0) {
+                        Swal.showValidationMessage('<i class="bi bi-exclamation-triangle"></i> Por favor ingresa un costo válido mayor a 0');
+                        return false;
+                    }
+                    return costo;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/admin/alquiler/contraproponer-transporte', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `alquilerId=${pedidoId}&costoTransporte=${result.value}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const isDark = document.body.classList.contains('dark-mode');
+                        
+                            Swal.fire({
+                                html: `
+                                    <div style="text-align: center; padding: 20px; animation: zoomIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);">
+                                        <div style="position: relative; display: inline-block; margin-bottom: 20px;">
+                                            <div style="width: 90px; height: 90px; background: linear-gradient(135deg, ${isDark ? 'rgba(255, 193, 7, 0.2)' : 'rgba(255, 193, 7, 0.15)'}, ${isDark ? 'rgba(255, 152, 0, 0.2)' : 'rgba(255, 152, 0, 0.15)'}); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: successPulse 1.5s ease infinite;">
+                                                <i class="bi bi-check-circle-fill" style="font-size: 45px; color: #ffc107; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));"></i>
+                                            </div>
+                                            <div style="position: absolute; top: -5px; right: -5px; width: 30px; height: 30px; background: linear-gradient(135deg, #28a745, #20c997); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: ping 1s ease-in-out infinite; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);">
+                                                <i class="bi bi-send-fill" style="font-size: 12px; color: white;"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <h3 style="color: ${isDark ? '#ffc107' : '#856404'}; margin: 15px 0 20px; font-size: 24px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">¡Contrapropuesta Enviada!</h3>
+                                        
+                                        <div style="background: ${isDark ? 'linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.1))' : 'linear-gradient(135deg, #fff3cd, #ffe8a1)'}; padding: 20px; border-radius: 12px; margin: 15px 0; border: 2px solid ${isDark ? 'rgba(255, 193, 7, 0.4)' : '#ffc107'}; box-shadow: 0 8px 20px ${isDark ? 'rgba(255, 193, 7, 0.15)' : 'rgba(255, 193, 7, 0.25)'}; position: relative; overflow: hidden;">
+                                            <div style="position: absolute; top: -50%; right: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); animation: shimmer 3s linear infinite;"></div>
+                                            <p style="font-size: 13px; color: ${isDark ? '#ffc107' : '#856404'}; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; opacity: 0.9;">Tu Contrapropuesta</p>
+                                            <p style="font-size: 38px; font-weight: 900; color: ${isDark ? '#ffc107' : '#856404'}; margin: 0; text-shadow: 0 2px 8px rgba(255, 193, 7, 0.3); position: relative; z-index: 1;">$${parseFloat(data.costoTransporte).toLocaleString('es-CO')}</p>
+                                        </div>
+                                        
+                                        <div style="background: ${isDark ? 'rgba(108, 117, 125, 0.15)' : 'rgba(108, 117, 125, 0.1)'}; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 4px solid ${isDark ? '#6c757d' : '#9ca3af'};">
+                                            <p style="color: ${isDark ? '#9ca3af' : '#7f8c8d'}; font-size: 13px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.5;">
+                                                <i class="bi bi-clock-history" style="font-size: 16px;"></i>
+                                                <span>El usuario debe aceptar o rechazar tu propuesta</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                `,
+                                width: '480px',
+                                showConfirmButton: true,
+                                confirmButtonText: '<i class="bi bi-check-lg"></i> Entendido',
+                                confirmButtonColor: '#ffc107',
+                                customClass: {
+                                    popup: isDark ? 'swal-dark swal-compact' : 'swal-compact',
+                                    confirmButton: 'swal-button-premium'
+                                },
+                                showClass: {
+                                    popup: 'animate__animated animate__zoomIn animate__faster'
+                                }
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#e74c3c'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Conexión',
+                            text: 'No se pudo conectar con el servidor',
+                            confirmButtonColor: '#e74c3c'
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+    <!-- Script de notificaciones admin -->
+    <script src="/js/admin-notifications.js"></script>
+</body>
+</html>

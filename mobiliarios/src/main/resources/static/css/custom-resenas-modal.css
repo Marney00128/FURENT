@@ -1,0 +1,590 @@
+/* ========== MODAL PERSONALIZADO DE RESEÑAS ========== */
+
+/* Overlay y Container Principal */
+.custom-resenas-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.custom-resenas-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.custom-resenas-modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.custom-resenas-modal-container {
+    position: relative;
+    z-index: 2;
+    background: white;
+    border-radius: 24px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.custom-resenas-modal.active .custom-resenas-modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* Header del Modal */
+.custom-resenas-modal-header {
+    background: linear-gradient(135deg, #8cbc00 0%, #6fa000 100%);
+    padding: 30px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.custom-resenas-modal-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -5%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    animation: float 8s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-30px) rotate(180deg);
+    }
+}
+
+.modal-header-icon {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.modal-header-icon i {
+    font-size: 32px;
+    color: white;
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.modal-header-content {
+    flex: 1;
+}
+
+.modal-header-content h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header-content p {
+    margin: 6px 0 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+.custom-modal-close {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+
+.custom-modal-close i {
+    font-size: 20px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+.custom-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.custom-modal-close:hover i {
+    transform: rotate(90deg);
+}
+
+.custom-modal-close:active {
+    transform: scale(0.95);
+}
+
+/* Body del Modal */
+.custom-resenas-modal-body {
+    padding: 30px 40px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.custom-resenas-modal-body::-webkit-scrollbar {
+    width: 10px;
+}
+
+.custom-resenas-modal-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.custom-resenas-modal-body::-webkit-scrollbar-thumb {
+    background: #8cbc00;
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+
+.custom-resenas-modal-body::-webkit-scrollbar-thumb:hover {
+    background: #7aa600;
+}
+
+/* Tarjetas de Reseñas */
+.resena-modal-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 2px solid transparent;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.5s ease-out backwards;
+}
+
+.resena-modal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #8cbc00 0%, #037bc0 100%);
+    transition: width 0.3s ease;
+}
+
+.resena-modal-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+    border-color: #8cbc00;
+}
+
+.resena-modal-card:hover::before {
+    width: 6px;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.resena-modal-card[data-index="0"] { animation-delay: 0.05s; }
+.resena-modal-card[data-index="1"] { animation-delay: 0.1s; }
+.resena-modal-card[data-index="2"] { animation-delay: 0.15s; }
+.resena-modal-card[data-index="3"] { animation-delay: 0.2s; }
+.resena-modal-card[data-index="4"] { animation-delay: 0.25s; }
+
+/* Header de Reseña */
+.resena-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.resena-modal-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.resena-modal-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8cbc00 0%, #037bc0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(140, 188, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.resena-modal-user-info h4 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.user-id-badge {
+    display: inline-block;
+    font-size: 11px;
+    color: #64748b;
+    background: rgba(100, 116, 139, 0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Estado Badges */
+.estado-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.estado-badge.pendiente {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #78350f;
+}
+
+.estado-badge.aprobada {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #064e3b;
+}
+
+.estado-badge.rechazada {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: #7f1d1d;
+}
+
+/* Producto */
+.resena-modal-producto {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(140, 188, 0, 0.08);
+    padding: 10px 16px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(140, 188, 0, 0.2);
+}
+
+.resena-modal-producto i {
+    color: #8cbc00;
+    font-size: 18px;
+}
+
+.resena-modal-producto span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Rating */
+.resena-modal-rating {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.resena-modal-rating .stars {
+    font-size: 22px;
+    color: #fbbf24;
+    letter-spacing: 3px;
+    filter: drop-shadow(0 2px 4px rgba(251, 191, 36, 0.4));
+}
+
+.resena-modal-rating .rating-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+    background: rgba(251, 191, 36, 0.1);
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 2px solid rgba(251, 191, 36, 0.3);
+}
+
+/* Comentario */
+.resena-modal-comment {
+    position: relative;
+    background: white;
+    padding: 18px 20px;
+    border-radius: 14px;
+    border-left: 4px solid #8cbc00;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.resena-modal-comment i {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 32px;
+    color: rgba(140, 188, 0, 0.1);
+}
+
+.resena-modal-comment p {
+    margin: 0;
+    padding-left: 30px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #475569;
+    font-style: italic;
+}
+
+/* Respuesta Admin */
+.resena-modal-admin-response {
+    background: linear-gradient(135deg, rgba(140, 188, 0, 0.08) 0%, rgba(140, 188, 0, 0.05) 100%);
+    padding: 16px 18px;
+    border-radius: 14px;
+    border-left: 4px solid #8cbc00;
+    margin-bottom: 14px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.admin-response-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.admin-response-header i {
+    color: #8cbc00;
+    font-size: 16px;
+}
+
+.admin-response-header span {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.resena-modal-admin-response p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+/* Footer */
+.resena-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.resena-modal-footer i {
+    font-size: 11px;
+}
+
+/* Dark Mode */
+.dark-mode .custom-resenas-modal-container {
+    background: #1e293b;
+}
+
+.dark-mode .custom-resenas-modal-body::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+.dark-mode .resena-modal-card {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+
+.dark-mode .resena-modal-user-info h4 {
+    color: #e2e8f0;
+}
+
+.dark-mode .user-id-badge {
+    color: #94a3b8;
+    background: rgba(148, 163, 184, 0.15);
+}
+
+.dark-mode .resena-modal-producto {
+    background: rgba(140, 188, 0, 0.12);
+    border-color: rgba(140, 188, 0, 0.3);
+}
+
+.dark-mode .resena-modal-producto span {
+    color: #e2e8f0;
+}
+
+.dark-mode .resena-modal-rating .rating-value {
+    color: #e2e8f0;
+    background: rgba(251, 191, 36, 0.15);
+}
+
+.dark-mode .resena-modal-comment {
+    background: #0f172a;
+    border-left-color: #8cbc00;
+}
+
+.dark-mode .resena-modal-comment p {
+    color: #cbd5e1;
+}
+
+.dark-mode .resena-modal-admin-response {
+    background: linear-gradient(135deg, rgba(140, 188, 0, 0.15) 0%, rgba(140, 188, 0, 0.08) 100%);
+}
+
+.dark-mode .admin-response-header span {
+    color: #e2e8f0;
+}
+
+.dark-mode .resena-modal-admin-response p {
+    color: #cbd5e1;
+}
+
+.dark-mode .resena-modal-footer {
+    color: #64748b;
+    border-top-color: rgba(100, 116, 139, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-resenas-modal-container {
+        width: 95%;
+        max-height: 90vh;
+        border-radius: 20px;
+    }
+    
+    .custom-resenas-modal-header {
+        padding: 24px 20px;
+        flex-wrap: wrap;
+    }
+    
+    .modal-header-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .modal-header-icon i {
+        font-size: 28px;
+    }
+    
+    .modal-header-content h2 {
+        font-size: 24px;
+    }
+    
+    .modal-header-content p {
+        font-size: 13px;
+    }
+    
+    .custom-modal-close {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .custom-resenas-modal-body {
+        padding: 20px;
+    }
+    
+    .resena-modal-card {
+        padding: 20px;
+    }
+    
+    .resena-modal-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .resena-modal-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    .resena-modal-rating .stars {
+        font-size: 20px;
+    }
+}

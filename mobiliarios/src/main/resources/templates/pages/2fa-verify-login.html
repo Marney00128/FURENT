@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación 2FA | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <style>
+        .verify-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #10b981 0%, #fbbf24 50%, #3b82f6 100%);
+            padding: 2rem;
+        }
+        .verify-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .verify-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981 0%, #fbbf24 50%, #3b82f6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        .verify-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .verify-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+        .code-input {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+        .verify-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #10b981 0%, #fbbf24 50%, #3b82f6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #f5c6cb;
+        }
+        .info-box {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            border-left: 4px solid #2196f3;
+            text-align: left;
+        }
+        .info-box p {
+            margin: 0;
+            color: #1565c0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-card">
+            <div class="verify-icon">
+                <i class="bi bi-shield-lock"></i>
+            </div>
+            
+            <h1 class="verify-title">Verificación de Dos Factores</h1>
+            <p class="verify-subtitle">
+                Ingresa el código de 6 dígitos de tu app Google Authenticator
+            </p>
+
+            <div th:if="${error}" class="error-message">
+                <i class="bi bi-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <form action="/login/verify-2fa" method="post">
+                <input type="text" 
+                       id="code" 
+                       name="code" 
+                       class="code-input"
+                       required
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       placeholder="000000"
+                       autofocus>
+
+                <div style="text-align: left; margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; cursor: pointer; font-size: 0.95rem; color: #555;">
+                        <input type="checkbox" 
+                               name="recordarDispositivo" 
+                               value="true"
+                               style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                        <span>
+                            <i class="bi bi-laptop"></i> Recordar este dispositivo por 3 días
+                        </span>
+                    </label>
+                    <small style="display: block; margin-left: 1.6rem; color: #888; font-size: 0.85rem; margin-top: 0.3rem;">
+                        No tendrás que ingresar el código 2FA en este dispositivo durante 3 días
+                    </small>
+                </div>
+
+                <button type="submit" class="verify-btn">
+                    <i class="bi bi-check-circle"></i> Verificar
+                </button>
+            </form>
+
+            <div class="info-box">
+                <p>
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Nota:</strong> El código cambia cada 30 segundos. Si no funciona, espera al siguiente código.
+                </p>
+            </div>
+
+            <a href="/login" class="back-link">
+                <i class="bi bi-arrow-left"></i> Volver al inicio de sesión
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Auto-formatear código
+        document.getElementById('code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Auto-submit cuando se ingresan 6 dígitos (deshabilitado para permitir marcar checkbox)
+        // document.getElementById('code').addEventListener('input', function(e) {
+        //     if (this.value.length === 6) {
+        //         this.form.submit();
+        //     }
+        // });
+    </script>
+</body>
+</html>

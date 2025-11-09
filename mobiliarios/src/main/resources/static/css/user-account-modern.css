@@ -1,0 +1,609 @@
+/* ============================================
+   USER ACCOUNT MODERN DESIGN
+   Diseño moderno con animaciones y glassmorphism
+   ============================================ */
+
+/* Animaciones de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideRight {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Contenedor principal */
+.user-account-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 30px;
+    padding: 0 0 60px 0;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Sidebar Moderno */
+.account-sidebar {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    animation: slideRight 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Profile Avatar */
+.account-profile {
+    text-align: center;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 25px;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.profile-avatar-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.profile-avatar-large:hover {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
+}
+
+.account-profile h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+}
+
+.account-profile p {
+    color: #718096;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Menú del Sidebar */
+.account-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.account-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    text-decoration: none;
+    color: #4a5568;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.account-menu a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.account-menu a i {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.account-menu a:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%);
+    color: #10b981;
+    transform: translateX(5px);
+}
+
+.account-menu a:hover::before {
+    transform: scaleY(1);
+}
+
+.account-menu a:hover i {
+    transform: scale(1.1);
+}
+
+.account-menu a.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.account-menu a.active i {
+    transform: scale(1.1);
+}
+
+.logout-menu-link {
+    color: #ef4444 !important;
+    margin-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 18px !important;
+}
+
+.logout-menu-link:hover {
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #dc2626 !important;
+}
+
+/* Content Area */
+.account-content {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Secciones */
+.account-section {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    padding: 35px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    animation: fadeInUp 0.8s ease-out both;
+}
+
+.account-section:nth-child(1) { animation-delay: 0.1s; }
+.account-section:nth-child(2) { animation-delay: 0.2s; }
+.account-section:nth-child(3) { animation-delay: 0.3s; }
+
+.account-section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 25px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.account-section h2 i {
+    color: #10b981;
+    font-size: 1.6rem;
+}
+
+/* Section Header con botón */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+/* ===== Legibilidad cabecera Mi cuenta ===== */
+.user-account-page .page-header h1 {
+    color: #ffffff !important; /* alto contraste sobre el degradado */
+    text-shadow: none !important; /* sin sombra */
+    font-weight: 800 !important;
+}
+.user-account-page .page-header p {
+    color: #e5e7eb !important; /* gris claro legible */
+    text-shadow: none !important;
+    font-weight: 500;
+}
+
+.section-header h2 {
+    margin: 0;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: transparent;
+    color: #4a5568;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+    color: #10b981;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.info-item {
+    padding: 20px;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #f7fafc 100%);
+}
+
+.info-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #718096;
+    margin-bottom: 10px;
+}
+
+.info-item label i {
+    color: #10b981;
+}
+
+.info-item p {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.stat-card {
+    padding: 25px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #edf2f7;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    border-color: #10b981;
+}
+
+.stat-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.stat-info h3 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 8px 0;
+}
+
+.stat-info p {
+    font-size: 0.95rem;
+    color: #718096;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.action-card {
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+    border-radius: 18px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #edf2f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.action-card i {
+    font-size: 2.5rem;
+    color: #10b981;
+    transition: all 0.3s ease;
+}
+
+.action-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+.action-card p {
+    font-size: 0.9rem;
+    color: #718096;
+    margin: 0;
+}
+
+.action-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 40px rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, #ffffff 100%);
+}
+
+.action-card:hover i {
+    transform: scale(1.2) rotate(-10deg);
+    color: #059669;
+}
+
+.action-card:hover h3 {
+    color: #10b981;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .user-account-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .account-sidebar {
+        position: relative;
+        top: 0;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .account-section {
+        padding: 25px 20px;
+    }
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+body.dark-mode .account-sidebar {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .account-profile {
+    border-bottom-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .account-profile h3 {
+    color: #f1f5f9;
+}
+
+body.dark-mode .account-profile p {
+    color: #cbd5e0;
+}
+
+body.dark-mode .account-menu a {
+    color: #cbd5e0;
+}
+
+body.dark-mode .account-menu a:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+    color: #10b981;
+}
+
+body.dark-mode .logout-menu-link {
+    border-top-color: rgba(100, 116, 139, 0.3) !important;
+}
+
+body.dark-mode .account-section {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .account-section h2 {
+    color: #f1f5f9;
+}
+
+body.dark-mode .btn-outline {
+    border-color: rgba(100, 116, 139, 0.3);
+    color: #cbd5e0;
+}
+
+body.dark-mode .btn-outline:hover {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+    color: #10b981;
+}
+
+body.dark-mode .info-item {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .info-item:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, #334155 100%);
+    border-color: #10b981;
+}
+
+body.dark-mode .info-item label {
+    color: #94a3b8;
+}
+
+body.dark-mode .info-item label i {
+    color: #10b981;
+}
+
+body.dark-mode .info-item p {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+    background: transparent !important;
+}
+
+/* Forzar estilos específicos para elementos de información */
+body.dark-mode .info-grid .info-item p,
+body.dark-mode .info-grid .info-item span,
+body.dark-mode .account-section .info-item p {
+    color: #f1f5f9 !important;
+    background: transparent !important;
+}
+
+/* Asegurar que cualquier texto dentro de info-item sea visible */
+body.dark-mode .info-item * {
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .info-item label,
+body.dark-mode .info-item label * {
+    color: #94a3b8 !important;
+}
+
+/* Forzar que todos los elementos internos tengan fondo oscuro */
+body.dark-mode .info-item div,
+body.dark-mode .info-item span:not(label span),
+body.dark-mode .info-item > * {
+    background: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+/* Si hay algún contenedor interno blanco, forzarlo a oscuro */
+body.dark-mode .info-item [style*="background"],
+body.dark-mode .info-item [class*="bg-"],
+body.dark-mode .info-item [class*="white"] {
+    background: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+body.dark-mode .stat-card {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .stat-card:hover {
+    border-color: #10b981;
+}
+
+body.dark-mode .stat-info p {
+    color: #94a3b8;
+}
+
+body.dark-mode .action-card {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .action-card:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, #334155 100%);
+}
+
+body.dark-mode .action-card h3 {
+    color: #f1f5f9;
+}
+
+body.dark-mode .action-card p {
+    color: #94a3b8;
+}

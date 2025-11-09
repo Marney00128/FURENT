@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registros del Sistema | FURENT Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/admin-notifications.css">
+    <link rel="stylesheet" href="/css/dark-mode.css">
+    <style>
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --bg-hover: #f0f0f0;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --bg-hover: #334155;
+        }
+
+        .main-content {
+            background: var(--bg-primary);
+            min-height: 100vh;
+        }
+
+        .content-wrapper {
+            padding: 20px;
+            background: var(--bg-primary);
+        }
+
+        /* Dark mode main content */
+        body.dark-mode .main-content {
+            background: var(--bg-primary);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #8cbc00 0%, #037bc0 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header p {
+            margin: 8px 0 0 0;
+            opacity: 0.95;
+            font-size: 14px;
+        }
+
+        .filters-card {
+            background: var(--card-bg, white);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid var(--border-color, #e0e0e0);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary, #2c3e50);
+            font-size: 14px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border-color, #e0e0e0);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg-primary, white);
+            color: var(--text-primary, #2c3e50);
+            transition: all 0.3s ease;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: #8cbc00;
+            box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.1);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(140, 188, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary, #e0e0e0);
+            color: var(--text-primary, #2c3e50);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover, #d0d0d0);
+        }
+
+        .logs-table-container {
+            background: var(--card-bg, white);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid var(--border-color, #e0e0e0);
+            overflow-x: auto;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .logs-table thead th {
+            background: var(--bg-primary, #f8f9fa);
+            color: var(--text-primary, #2c3e50);
+            font-weight: 700;
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color, #e0e0e0);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .logs-table tbody tr {
+            border-bottom: 1px solid var(--border-color, #e0e0e0);
+            transition: all 0.3s ease;
+        }
+
+        .logs-table tbody tr:hover {
+            background: var(--bg-hover, #f8f9fa);
+        }
+
+        .logs-table tbody td {
+            padding: 15px;
+            color: var(--text-primary, #2c3e50);
+            font-size: 14px;
+        }
+
+        .log-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .log-badge.create {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .log-badge.update {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .log-badge.delete {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log-badge.login {
+            background: #e7e3fc;
+            color: #4a148c;
+        }
+
+        .log-badge.rental {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Dark mode badges */
+        body.dark-mode .log-badge.create {
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        body.dark-mode .log-badge.update {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        body.dark-mode .log-badge.delete {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        body.dark-mode .log-badge.login {
+            background: rgba(168, 85, 247, 0.2);
+            color: #c084fc;
+        }
+
+        body.dark-mode .log-badge.rental {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .log-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        .log-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .log-details {
+            color: var(--text-secondary, #7f8c8d);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            border: 2px solid var(--border-color, #e0e0e0);
+            background: var(--card-bg, white);
+            color: var(--text-primary, #2c3e50);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #8cbc00;
+            color: white;
+            border-color: #8cbc00;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination a {
+            text-decoration: none;
+        }
+
+        /* Dark mode pagination */
+        body.dark-mode .pagination button {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        body.dark-mode .pagination button:hover:not(:disabled) {
+            background: #8cbc00;
+            color: white;
+            border-color: #8cbc00;
+        }
+
+        body.dark-mode .pagination .page-info {
+            color: var(--text-primary);
+        }
+
+        .pagination .page-info {
+            color: var(--text-primary, #2c3e50);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-bg, white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid var(--border-color, #e0e0e0);
+            text-align: center;
+        }
+
+        .stat-card i {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card.create i { color: #28a745; }
+        .stat-card.update i { color: #17a2b8; }
+        .stat-card.delete i { color: #dc3545; }
+        .stat-card.rental i { color: #ffc107; }
+
+        /* Dark mode stat cards */
+        body.dark-mode .stat-card.create i { color: #4ade80; }
+        body.dark-mode .stat-card.update i { color: #60a5fa; }
+        body.dark-mode .stat-card.delete i { color: #f87171; }
+        body.dark-mode .stat-card.rental i { color: #fbbf24; }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary, #2c3e50);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary, #7f8c8d);
+            font-weight: 600;
+        }
+
+        /* Export buttons styling */
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-secondary:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Search box enhancement */
+        .search-box {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input {
+            transition: all 0.3s ease;
+            padding-right: 40px;
+        }
+
+        .search-box input:focus {
+            box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .search-box.searching {
+            animation: searchPulse 1.5s infinite;
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            font-size: 16px;
+            z-index: 10;
+        }
+
+        .search-clear:hover {
+            color: #dc3545;
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        @keyframes searchPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Filter animations */
+        .filters-card {
+            transition: all 0.3s ease;
+        }
+
+        .filters-card.active {
+            border-color: #8cbc00;
+            box-shadow: 0 8px 25px rgba(140, 188, 0, 0.15);
+        }
+
+        .filter-group {
+            position: relative;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            transform: translateY(-2px);
+        }
+
+        /* Loading animation for filters */
+        .filter-loading {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(140, 188, 0, 0.3);
+            border-top-color: #8cbc00;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .filter-group.loading .filter-loading {
+            display: block;
+        }
+
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        /* Search results highlight */
+        .highlight-match {
+            background: rgba(255, 235, 59, 0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+            animation: highlightFade 2s ease;
+        }
+
+        @keyframes highlightFade {
+            0% { background: rgba(255, 235, 59, 0.6); }
+            100% { background: rgba(255, 235, 59, 0.1); }
+        }
+
+        /* Filter badge */
+        .active-filters {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #8cbc00, #037bc0);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .filter-badge i {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .filter-badge i:hover {
+            transform: scale(1.3) rotate(90deg);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* No results animation */
+        .no-results-animation {
+            animation: fadeInScale 0.5s ease;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logs-table-container {
+                padding: 15px;
+            }
+
+            .logs-table {
+                font-size: 12px;
+            }
+
+            .logs-table thead th,
+            .logs-table tbody td {
+                padding: 10px;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .pagination .page-info {
+                width: 100%;
+                order: -1;
+                margin-bottom: 10px;
+            }
+
+            .pagination .page-info span {
+                display: block;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/admin-sidebar :: sidebar('registros')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1>Registros</h1>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-box" title="Presiona Ctrl+K para enfocar o Esc para limpiar">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Buscar en logs... (Ctrl+K)" id="mainSearchInput">
+                    <span class="search-clear" onclick="clearMainSearch()" style="display: none;">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </span>
+                </div>
+
+                <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                    <i class="bi bi-moon-stars theme-icon-dark"></i>
+                    <i class="bi bi-sun-fill theme-icon-light" style="display: none;"></i>
+                </button>
+
+                <button class="notification-btn">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge">0</span>
+                </button>
+
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <span th:text="${#strings.substring(session.usuarioNombre != null ? session.usuarioNombre : 'Admin', 0, 1)}">A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" th:text="${session.usuarioNombre != null ? session.usuarioNombre : 'Admin'}">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Page Header -->
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h1>
+                        <i class="bi bi-file-text"></i>
+                        Logs del Sistema
+                    </h1>
+                    <p>Registro completo de todas las acciones realizadas en la plataforma</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="exportToCSV()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-download"></i>
+                        <span>Exportar CSV</span>
+                    </button>
+                    <button onclick="window.print()" class="btn btn-secondary" style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-printer"></i>
+                        <span>Imprimir</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card create">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <div class="stat-value" th:text="${stats.CREATE != null ? stats.CREATE : 0}">0</div>
+                    <div class="stat-label">Creaciones</div>
+                </div>
+                <div class="stat-card update">
+                    <i class="bi bi-pencil-square"></i>
+                    <div class="stat-value" th:text="${stats.UPDATE != null ? stats.UPDATE : 0}">0</div>
+                    <div class="stat-label">Actualizaciones</div>
+                </div>
+                <div class="stat-card delete">
+                    <i class="bi bi-trash-fill"></i>
+                    <div class="stat-value" th:text="${stats.DELETE != null ? stats.DELETE : 0}">0</div>
+                    <div class="stat-label">Eliminaciones</div>
+                </div>
+                <div class="stat-card rental">
+                    <i class="bi bi-cart-check-fill"></i>
+                    <div class="stat-value" th:text="${stats.RENTAL != null ? stats.RENTAL : 0}">0</div>
+                    <div class="stat-label">Alquileres</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <form id="filterForm" onsubmit="return applyFilters(event)">
+                <div class="filters-card" id="filtersCard">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label><i class="bi bi-filter"></i> Tipo de Acción</label>
+                            <select id="filterAction" th:value="${filterAction}">
+                                <option value="">Todas las acciones</option>
+                                <option value="CREATE" th:selected="${filterAction == 'CREATE'}">Creaciones</option>
+                                <option value="UPDATE" th:selected="${filterAction == 'UPDATE'}">Actualizaciones</option>
+                                <option value="DELETE" th:selected="${filterAction == 'DELETE'}">Eliminaciones</option>
+                                <option value="LOGIN" th:selected="${filterAction == 'LOGIN'}">Inicios de sesión</option>
+                                <option value="RENTAL" th:selected="${filterAction == 'RENTAL'}">Alquileres</option>
+                            </select>
+                            <div class="filter-loading"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="bi bi-person"></i> Usuario</label>
+                            <input type="text" id="filterUser" placeholder="Buscar por usuario..." th:value="${filterUser}">
+                            <div class="filter-loading"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="bi bi-calendar"></i> Fecha Desde</label>
+                            <input type="datetime-local" id="filterDateFrom" th:value="${filterDateFrom}">
+                            <div class="filter-loading"></div>
+                        </div>
+                        <div class="filter-group">
+                            <label><i class="bi bi-calendario"></i> Fecha Hasta</label>
+                            <input type="datetime-local" id="filterDateTo" th:value="${filterDateTo}">
+                            <div class="filter-loading"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Active Filters Badges -->
+                    <div class="active-filters" id="activeFilters"></div>
+                    
+                    <div class="filter-actions">
+                        <a href="/admin/reportes" class="btn btn-secondary" style="text-decoration: none;">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="applyFiltersBtn">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Logs Table -->
+            <div class="logs-table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: var(--bg-primary); border-radius: 8px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="bi bi-list-ul" style="font-size: 20px; color: var(--primary-color);"></i>
+                        <span style="font-weight: 600; color: var(--text-primary);">
+                            Total de registros: <span id="totalRecords" style="color: var(--primary-color);" th:text="${totalElements}">0</span>
+                        </span>
+                        <span style="color: var(--text-secondary); font-size: 14px;" id="filterStatus">
+                            <span th:if="${totalPages > 1}">
+                                (Mostrando página <strong th:text="${currentPage + 1}">1</strong> de <strong th:text="${totalPages}">1</strong>)
+                            </span>
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="clearAllFilters()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                            <i class="bi bi-x-circle"></i> Limpiar todo
+                        </button>
+                    </div>
+                </div>
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-clock-history"></i> Fecha y Hora</th>
+                            <th><i class="bi bi-person"></i> Usuario</th>
+                            <th><i class="bi bi-tag"></i> Acción</th>
+                            <th><i class="bi bi-info-circle"></i> Descripción</th>
+                            <th><i class="bi bi-hdd"></i> Módulo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr th:if="${logs == null or logs.isEmpty()}">
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                <i class="bi bi-inbox" style="font-size: 48px; display: block; margin-bottom: 10px;"></i>
+                                No hay logs registrados aún
+                            </td>
+                        </tr>
+                        <tr th:each="log : ${logs}">
+                            <td th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm')}">03/11/2024 16:45</td>
+                            <td>
+                                <div class="log-user">
+                                    <div class="log-user-avatar" th:text="${#strings.substring(log.userName, 0, 1)}">A</div>
+                                    <div>
+                                        <strong th:text="${log.userName}">Usuario</strong>
+                                        <div class="log-details" th:text="${log.userEmail}">email@example.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span th:class="'log-badge ' + ${#strings.toLowerCase(log.action)}">
+                                    <i th:class="${log.action == 'CREATE' ? 'bi bi-plus-circle log-icon' : 
+                                                   log.action == 'UPDATE' ? 'bi bi-pencil log-icon' :
+                                                   log.action == 'DELETE' ? 'bi bi-trash log-icon' :
+                                                   log.action == 'LOGIN' ? 'bi bi-box-arrow-in-right log-icon' :
+                                                   'bi bi-cart-check log-icon'}"></i>
+                                    <span th:text="${log.action == 'CREATE' ? 'Crear' : 
+                                                     log.action == 'UPDATE' ? 'Actualizar' :
+                                                     log.action == 'DELETE' ? 'Eliminar' :
+                                                     log.action == 'LOGIN' ? 'Login' : 'Alquiler'}">Acción</span>
+                                </span>
+                            </td>
+                            <td th:text="${log.description}">Descripción</td>
+                            <td th:text="${log.module}">Módulo</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="pagination" th:if="${totalPages > 0}">
+                    <button th:disabled="${currentPage == 0}" 
+                            class="pagination-btn"
+                            th:attr="data-page=${currentPage - 1}">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
+                    <span class="page-info">
+                        Página <strong th:text="${currentPage + 1}">1</strong> de <strong th:text="${totalPages}">1</strong>
+                        <span style="color: var(--text-secondary); font-weight: normal; font-size: 13px;">
+                            (Mostrando <strong th:text="${#lists.size(logs)}">0</strong> de <strong th:text="${totalElements}">0</strong> registros)
+                        </span>
+                    </span>
+                    <button th:disabled="${currentPage >= totalPages - 1}"
+                            class="pagination-btn"
+                            th:attr="data-page=${currentPage + 1}">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Hidden form data for pagination -->
+                <input type="hidden" id="currentFilterAction" th:value="${filterAction}">
+                <input type="hidden" id="currentFilterUser" th:value="${filterUser}">
+                <input type="hidden" id="currentFilterDateFrom" th:value="${filterDateFrom}">
+                <input type="hidden" id="currentFilterDateTo" th:value="${filterDateTo}">
+            </div>
+        </div>
+    </main>
+
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script>
+        // Sidebar toggle function
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('expanded');
+        }
+
+        // ========================================
+        // PAGINACIÓN
+        // ========================================
+        function navigateToPage(page) {
+            if (page < 0) return;
+            
+            // Construir URL con parámetros no vacíos
+            let url = '/admin/reportes?page=' + page;
+            
+            const filterAction = document.getElementById('currentFilterAction')?.value;
+            const filterUser = document.getElementById('currentFilterUser')?.value;
+            const filterDateFrom = document.getElementById('currentFilterDateFrom')?.value;
+            const filterDateTo = document.getElementById('currentFilterDateTo')?.value;
+            
+            if (filterAction && filterAction.trim() !== '') {
+                url += '&action=' + encodeURIComponent(filterAction);
+            }
+            if (filterUser && filterUser.trim() !== '') {
+                url += '&userName=' + encodeURIComponent(filterUser);
+            }
+            if (filterDateFrom && filterDateFrom.trim() !== '') {
+                url += '&dateFrom=' + encodeURIComponent(filterDateFrom);
+            }
+            if (filterDateTo && filterDateTo.trim() !== '') {
+                url += '&dateTo=' + encodeURIComponent(filterDateTo);
+            }
+            
+            window.location.href = url;
+        }
+
+        // ========================================
+        // APLICAR FILTROS
+        // ========================================
+        function applyFilters(event) {
+            event.preventDefault();
+            
+            // Construir URL solo con parámetros no vacíos
+            let url = '/admin/reportes?page=0';
+            
+            const filterAction = document.getElementById('filterAction')?.value;
+            const filterUser = document.getElementById('filterUser')?.value;
+            const filterDateFrom = document.getElementById('filterDateFrom')?.value;
+            const filterDateTo = document.getElementById('filterDateTo')?.value;
+            
+            if (filterAction && filterAction.trim() !== '') {
+                url += '&action=' + encodeURIComponent(filterAction);
+            }
+            if (filterUser && filterUser.trim() !== '') {
+                url += '&userName=' + encodeURIComponent(filterUser);
+            }
+            if (filterDateFrom && filterDateFrom.trim() !== '') {
+                url += '&dateFrom=' + encodeURIComponent(filterDateFrom);
+            }
+            if (filterDateTo && filterDateTo.trim() !== '') {
+                url += '&dateTo=' + encodeURIComponent(filterDateTo);
+            }
+            
+            // Mostrar animación de carga
+            const applyBtn = document.getElementById('applyFiltersBtn');
+            if (applyBtn) {
+                applyBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Aplicando...';
+                applyBtn.disabled = true;
+            }
+            
+            window.location.href = url;
+            return false;
+        }
+
+        // ========================================
+        // BÚSQUEDA EN TIEMPO REAL
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar event listeners a los botones de paginación
+            const paginationButtons = document.querySelectorAll('.pagination-btn');
+            paginationButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        const page = parseInt(this.getAttribute('data-page'));
+                        navigateToPage(page);
+                    }
+                });
+            });
+            
+            const searchInput = document.querySelector('.search-box input');
+            const searchBox = document.querySelector('.search-box');
+            const tableRows = document.querySelectorAll('.logs-table tbody tr');
+            const filtersCard = document.getElementById('filtersCard');
+            
+            // Initialize
+            updateRecordCounter();
+            displayActiveFilters();
+            
+            // Search with animations
+            if (searchInput) {
+                let searchTimeout;
+                const searchClearBtn = document.querySelector('.search-clear');
+                
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase().trim();
+                    
+                    // Show/hide clear button
+                    if (searchClearBtn) {
+                        searchClearBtn.style.display = searchTerm ? 'block' : 'none';
+                    }
+                    
+                    // Add searching animation
+                    if (searchTerm) {
+                        searchBox.classList.add('searching');
+                    } else {
+                        searchBox.classList.remove('searching');
+                    }
+                    
+                    // Debounce search
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        performSearch(searchTerm, tableRows);
+                        searchBox.classList.remove('searching');
+                    }, 300);
+                });
+                
+                // Clear search on Escape
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        clearMainSearch();
+                    }
+                });
+            }
+            
+            // Filter change animations
+            const filterInputs = document.querySelectorAll('#filterAction, #filterUser, #filterDateFrom, #filterDateTo');
+            filterInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    filtersCard.classList.add('active');
+                    setTimeout(() => filtersCard.classList.remove('active'), 300);
+                    displayActiveFilters();
+                });
+                
+                input.addEventListener('input', function() {
+                    displayActiveFilters();
+                });
+            });
+            
+            // Form submit animation
+            const filterForm = document.getElementById('filterForm');
+            const applyBtn = document.getElementById('applyFiltersBtn');
+            
+            if (filterForm) {
+                filterForm.addEventListener('submit', function(e) {
+                    applyBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Aplicando...';
+                    applyBtn.disabled = true;
+                });
+            }
+        });
+        
+        function performSearch(searchTerm, tableRows) {
+            tableRows.forEach(row => {
+                // Skip empty state row
+                if (row.querySelector('td[colspan]')) {
+                    return;
+                }
+                
+                const rowText = row.textContent.toLowerCase();
+                
+                if (rowText.includes(searchTerm)) {
+                    row.style.display = '';
+                    // Highlight animation
+                    row.style.animation = 'highlightRow 0.3s ease';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Update counter
+            updateRecordCounter();
+            
+            // Show message if no results
+            const visibleRows = Array.from(tableRows).filter(row => 
+                row.style.display !== 'none' && !row.querySelector('td[colspan]')
+            );
+            
+            if (visibleRows.length === 0 && searchTerm !== '') {
+                showNoResultsMessage();
+            } else {
+                hideNoResultsMessage();
+            }
+            
+            // Update filter status
+            updateFilterStatus(searchTerm);
+        }
+        
+        function displayActiveFilters() {
+            const activeFiltersContainer = document.getElementById('activeFilters');
+            if (!activeFiltersContainer) return;
+            
+            activeFiltersContainer.innerHTML = '';
+            
+            const filterAction = document.getElementById('filterAction')?.value;
+            const filterUser = document.getElementById('filterUser')?.value;
+            const filterDateFrom = document.getElementById('filterDateFrom')?.value;
+            const filterDateTo = document.getElementById('filterDateTo')?.value;
+            
+            const filters = [];
+            
+            if (filterAction) {
+                const actionText = document.querySelector(`#filterAction option[value="${filterAction}"]`)?.textContent;
+                filters.push({ type: 'action', label: `Acción: ${actionText}`, value: filterAction });
+            }
+            
+            if (filterUser) {
+                filters.push({ type: 'user', label: `Usuario: ${filterUser}`, value: filterUser });
+            }
+            
+            if (filterDateFrom) {
+                const date = new Date(filterDateFrom);
+                filters.push({ type: 'dateFrom', label: `Desde: ${date.toLocaleDateString()}`, value: filterDateFrom });
+            }
+            
+            if (filterDateTo) {
+                const date = new Date(filterDateTo);
+                filters.push({ type: 'dateTo', label: `Hasta: ${date.toLocaleDateString()}`, value: filterDateTo });
+            }
+            
+            filters.forEach(filter => {
+                const badge = document.createElement('div');
+                badge.className = 'filter-badge';
+                badge.innerHTML = `
+                    <span>${filter.label}</span>
+                    <i class="bi bi-x-circle" onclick="removeFilter('${filter.type}')"></i>
+                `;
+                activeFiltersContainer.appendChild(badge);
+            });
+        }
+        
+        function removeFilter(filterType) {
+            const filterMap = {
+                'action': 'filterAction',
+                'user': 'filterUser',
+                'dateFrom': 'filterDateFrom',
+                'dateTo': 'filterDateTo'
+            };
+            
+            const inputId = filterMap[filterType];
+            const input = document.getElementById(inputId);
+            
+            if (input) {
+                input.value = '';
+                displayActiveFilters();
+                
+                // Construir URL sin el filtro eliminado
+                let url = '/admin/reportes?page=0';
+                
+                const filterAction = document.getElementById('filterAction')?.value;
+                const filterUser = document.getElementById('filterUser')?.value;
+                const filterDateFrom = document.getElementById('filterDateFrom')?.value;
+                const filterDateTo = document.getElementById('filterDateTo')?.value;
+                
+                if (filterAction && filterAction.trim() !== '') {
+                    url += '&action=' + encodeURIComponent(filterAction);
+                }
+                if (filterUser && filterUser.trim() !== '') {
+                    url += '&userName=' + encodeURIComponent(filterUser);
+                }
+                if (filterDateFrom && filterDateFrom.trim() !== '') {
+                    url += '&dateFrom=' + encodeURIComponent(filterDateFrom);
+                }
+                if (filterDateTo && filterDateTo.trim() !== '') {
+                    url += '&dateTo=' + encodeURIComponent(filterDateTo);
+                }
+                
+                window.location.href = url;
+            }
+        }
+        
+        function clearMainSearch() {
+            const searchInput = document.querySelector('.search-box input');
+            const searchBox = document.querySelector('.search-box');
+            const searchClearBtn = document.querySelector('.search-clear');
+            const tableRows = document.querySelectorAll('.logs-table tbody tr');
+            
+            if (searchInput) {
+                searchInput.value = '';
+                searchBox.classList.remove('searching');
+                if (searchClearBtn) {
+                    searchClearBtn.style.display = 'none';
+                }
+                performSearch('', tableRows);
+                
+                // Show toast
+                showToast('Búsqueda limpiada', 'success');
+            }
+        }
+
+        function showNoResultsMessage() {
+            const tbody = document.querySelector('.logs-table tbody');
+            let noResultsRow = document.getElementById('no-results-row');
+            
+            if (!noResultsRow) {
+                noResultsRow = document.createElement('tr');
+                noResultsRow.id = 'no-results-row';
+                noResultsRow.className = 'no-results-animation';
+                noResultsRow.innerHTML = `
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-secondary);" class="no-results-animation">
+                        <i class="bi bi-search" style="font-size: 48px; display: block; margin-bottom: 10px; opacity: 0.5;"></i>
+                        <strong style="font-size: 18px; display: block; margin-bottom: 8px;">No se encontraron resultados</strong>
+                        <span style="font-size: 14px;">Intenta con otros términos de búsqueda o filtros</span>
+                    </td>
+                `;
+                tbody.appendChild(noResultsRow);
+            }
+            noResultsRow.style.display = '';
+        }
+
+        function hideNoResultsMessage() {
+            const noResultsRow = document.getElementById('no-results-row');
+            if (noResultsRow) {
+                noResultsRow.style.display = 'none';
+            }
+        }
+
+        // ========================================
+        // FILTROS AVANZADOS
+        // ========================================
+        
+        // Auto-submit on filter change
+        const filterSelects = document.querySelectorAll('#filterAction');
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                // Optional: auto-submit form when filter changes
+                // Uncomment the line below if you want instant filtering
+                // document.querySelector('form[action="/admin/reportes"]').submit();
+            });
+        });
+
+        // Date range validation
+        const dateFromInput = document.getElementById('filterDateFrom');
+        const dateToInput = document.getElementById('filterDateTo');
+
+        if (dateFromInput && dateToInput) {
+            dateFromInput.addEventListener('change', function() {
+                if (dateToInput.value && this.value > dateToInput.value) {
+                    alert('La fecha "Desde" no puede ser mayor que la fecha "Hasta"');
+                    this.value = '';
+                }
+            });
+
+            dateToInput.addEventListener('change', function() {
+                if (dateFromInput.value && this.value < dateFromInput.value) {
+                    alert('La fecha "Hasta" no puede ser menor que la fecha "Desde"');
+                    this.value = '';
+                }
+            });
+        }
+
+        // ========================================
+        // FILTRADO EN TIEMPO REAL (OPCIONAL)
+        // ========================================
+        
+        // Real-time filtering without page reload
+        function applyFiltersRealTime() {
+            const actionFilter = document.getElementById('filterAction').value.toLowerCase();
+            const userFilter = document.getElementById('filterUser').value.toLowerCase();
+            const tableRows = document.querySelectorAll('.logs-table tbody tr');
+            
+            tableRows.forEach(row => {
+                if (row.querySelector('td[colspan]')) return;
+                
+                const cells = row.querySelectorAll('td');
+                const action = cells[2]?.textContent.toLowerCase() || '';
+                const user = cells[1]?.textContent.toLowerCase() || '';
+                
+                let showRow = true;
+                
+                // Filter by action
+                if (actionFilter && !action.includes(actionFilter)) {
+                    showRow = false;
+                }
+                
+                // Filter by user
+                if (userFilter && !user.includes(userFilter)) {
+                    showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        }
+
+        // ========================================
+        // EXPORT FUNCTIONALITY
+        // ========================================
+        
+        function exportToCSV() {
+            const table = document.querySelector('.logs-table');
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                if (cells.length > 0 && !row.querySelector('td[colspan]')) {
+                    const rowData = Array.from(cells).map(cell => {
+                        return '"' + cell.textContent.trim().replace(/"/g, '""') + '"';
+                    });
+                    csv.push(rowData.join(','));
+                }
+            });
+            
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'logs_sistema_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ========================================
+        // KEYBOARD SHORTCUTS
+        // ========================================
+        
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('.search-box input')?.focus();
+            }
+            
+            // Ctrl/Cmd + E to export
+            if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                e.preventDefault();
+                exportToCSV();
+            }
+        });
+
+        // Add highlight animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes highlightRow {
+                0% { background-color: rgba(140, 188, 0, 0.2); }
+                100% { background-color: transparent; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+        
+        function updateRecordCounter() {
+            const tableRows = document.querySelectorAll('.logs-table tbody tr');
+            const visibleRows = Array.from(tableRows).filter(row => 
+                row.style.display !== 'none' && !row.querySelector('td[colspan]') && row.id !== 'no-results-row'
+            );
+            
+            const totalRecordsElement = document.getElementById('totalRecords');
+            const filterStatusElement = document.getElementById('filterStatus');
+            
+            if (totalRecordsElement && filterStatusElement) {
+                // Solo actualizar si hay búsqueda activa (no sobrescribir el total del backend)
+                const searchInput = document.querySelector('.search-box input');
+                if (searchInput && searchInput.value.trim() !== '') {
+                    totalRecordsElement.textContent = visibleRows.length;
+                    filterStatusElement.innerHTML = `(Filtrando por: "${searchInput.value.trim()}")`;
+                    
+                    // Add animation
+                    totalRecordsElement.style.animation = 'none';
+                    setTimeout(() => {
+                        totalRecordsElement.style.animation = 'pulse 0.3s ease';
+                    }, 10);
+                }
+            }
+        }
+
+        function updateFilterStatus(searchTerm) {
+            const filterStatusElement = document.getElementById('filterStatus');
+            if (filterStatusElement) {
+                if (searchTerm) {
+                    filterStatusElement.textContent = `(Filtrando por: "${searchTerm}")`;
+                    filterStatusElement.style.display = 'inline';
+                } else {
+                    filterStatusElement.textContent = '';
+                    filterStatusElement.style.display = 'none';
+                }
+            }
+        }
+
+        function clearAllFilters() {
+            // Clear search box
+            const searchInput = document.querySelector('.search-box input');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            
+            // Clear filter form
+            document.getElementById('filterAction').value = '';
+            document.getElementById('filterUser').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            
+            // Show all rows
+            const tableRows = document.querySelectorAll('.logs-table tbody tr');
+            tableRows.forEach(row => {
+                if (!row.querySelector('td[colspan]') || row.id === 'no-results-row') {
+                    row.style.display = '';
+                }
+            });
+            
+            // Hide no results message
+            hideNoResultsMessage();
+            
+            // Update counter and status
+            updateRecordCounter();
+            updateFilterStatus('');
+            
+            // Show success message
+            showToast('Filtros limpiados correctamente', 'success');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #3b82f6, #2563eb)'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 600;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            toast.innerHTML = `
+                <i class="bi bi-check-circle-fill" style="font-size: 20px;"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Add toast animations
+        const toastStyle = document.createElement('style');
+        toastStyle.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+        `;
+        document.head.appendChild(toastStyle);
+    </script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script de notificaciones admin -->
+    <script src="/js/admin-notifications.js"></script>
+</body>
+</html>

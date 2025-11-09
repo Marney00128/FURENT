@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar 2FA | FURENT Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/dark-mode.css">
+    <style>
+        :root {
+            --bg-primary: #f5f7fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --border-color: #e0e0e0;
+            --primary-color: #8cbc00;
+            --secondary-color: #037bc0;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d29;
+            --text-primary: #e8eaed;
+            --text-secondary: #9ca3af;
+            --border-color: #2d3748;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 650px;
+            width: 100%;
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .setup-icon {
+            font-size: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .setup-steps {
+            margin: 25px 0 20px 0;
+        }
+
+        .step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--bg-primary);
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .secret-key-container {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--bg-primary);
+            border-radius: 10px;
+            border: 2px dashed var(--border-color);
+        }
+
+        .secret-key-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .secret-key {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 1.5px;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .copy-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(140, 188, 0, 0.3);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: var(--primary-color);
+        }
+
+        .warning-box {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            gap: 12px;
+        }
+
+        .warning-box i {
+            font-size: 20px;
+            color: #fbbf24;
+            flex-shrink: 0;
+        }
+
+        .warning-box p {
+            color: var(--text-primary);
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .setup-container {
+                padding: 20px 15px;
+            }
+
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+
+            .secret-key {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <i class="bi bi-qr-code-scan setup-icon"></i>
+            <h1>Configurar Google Authenticator</h1>
+            <p class="subtitle">Sigue estos pasos para proteger el acceso a los registros</p>
+        </div>
+
+        <div class="setup-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Descarga Google Authenticator</h3>
+                    <p>Instala la aplicación Google Authenticator en tu dispositivo móvil desde la App Store (iOS) o Google Play Store (Android).</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Escanea el código QR</h3>
+                    <p>Abre Google Authenticator y escanea el siguiente código QR con la cámara de tu dispositivo.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="qr-container">
+            <div class="qr-code">
+                <img th:src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%;">
+            </div>
+
+            <div class="secret-key-container">
+                <div class="secret-key-label">Clave Secreta (Configuración Manual)</div>
+                <div class="secret-key" id="secretKey" th:text="${secretKey}">XXXXXXXXXXXXXXXXXXXX</div>
+                <button class="copy-btn" onclick="copySecretKey()">
+                    <i class="bi bi-clipboard"></i> Copiar Clave
+                </button>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <p><strong>Importante:</strong> Guarda esta clave secreta en un lugar seguro. Si pierdes el acceso a tu dispositivo, necesitarás esta clave para reconfigurar Google Authenticator.</p>
+        </div>
+
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h3>Verifica el código</h3>
+                <p>Una vez configurado, Google Authenticator generará un código de 6 dígitos que cambia cada 30 segundos. Úsalo para acceder a los registros.</p>
+            </div>
+        </div>
+
+        <a href="/admin/reportes/verify">
+            <button class="btn-continue">
+                <i class="bi bi-arrow-right-circle"></i>
+                Continuar a Verificación
+            </button>
+        </a>
+
+        <center>
+            <a href="/admin/dashboard" class="back-link">
+                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+            </a>
+        </center>
+    </div>
+
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script>
+        function copySecretKey() {
+            const secretKey = document.getElementById('secretKey').textContent;
+            navigator.clipboard.writeText(secretKey).then(() => {
+                const btn = event.target.closest('.copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check-circle"></i> ¡Copiado!';
+                btn.style.background = '#10b981';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                }, 2000);
+            }).catch(err => {
+                alert('Error al copiar: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>

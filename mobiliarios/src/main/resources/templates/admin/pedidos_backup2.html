@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Pedidos | Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .usuario-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .usuario-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        
+        .usuario-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .usuario-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            font-weight: 700;
+        }
+        
+        .usuario-datos h3 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .usuario-datos p {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .usuario-stats {
+            display: flex !important;
+            gap: 25px;
+            flex-shrink: 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-ver-pedidos {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .btn-ver-pedidos:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .pedidos-lista {
+            display: block;
+            margin-top: 20px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .pedidos-lista.hide {
+            display: none;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pedido-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+        
+        .pedido-item:hover {
+            background: #f0f1f3;
+            border-left-color: #764ba2;
+        }
+        
+        .pedido-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .pedido-id {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 15px;
+        }
+        
+        .pedido-fecha {
+            color: #7f8c8d;
+            font-size: 13px;
+        }
+        
+        .pedido-detalles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .detalle-item {
+            font-size: 13px;
+        }
+        
+        .detalle-label {
+            color: #7f8c8d;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .detalle-valor {
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .pedido-acciones {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .estado-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .estado-PENDIENTE { background: #fff3cd; color: #856404; }
+        .estado-CONFIRMADO { background: #d1ecf1; color: #0c5460; }
+        .estado-EN_CURSO { background: #e2d5f0; color: #6f42c1; }
+        .estado-COMPLETADO { background: #d4edda; color: #155724; }
+        .estado-CANCELADO { background: #f8d7da; color: #721c24; }
+        
+        .estado-select {
+            padding: 8px 14px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        .estado-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-cambiar {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-cambiar:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/admin-sidebar :: sidebar('pedidos')}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1><i class="bi bi-cart-check"></i> Gestión de Pedidos por Usuario</h1>
+            </div>
+
+            <div class="topbar-right">
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <span th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" th:text="${session.usuarioNombre}">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <div id="alertBox" class="alert"></div>
+            
+            <!-- Mensaje si no hay pedidos -->
+            <div th:if="${alquileresPorUsuario == null || alquileresPorUsuario.isEmpty()}" style="text-align: center; padding: 60px 20px;">
+                <i class="bi bi-inbox" style="font-size: 64px; color: #ccc;"></i>
+                <h2 style="color: #7f8c8d; margin-top: 20px;">No hay pedidos registrados</h2>
+                <p style="color: #95a5a6;">Los pedidos de los usuarios aparecerán aquí</p>
+            </div>
+            
+            <!-- Lista de Usuarios con sus Pedidos -->
+            <div th:each="entry : ${alquileresPorUsuario}">
+                <div class="usuario-card">
+                    <div class="usuario-header" th:with="usuarioId=${#strings.substringBefore(entry.key, '|')}, usuarioNombre=${#strings.substringBefore(#strings.substringAfter(entry.key, '|'), '|')}, usuarioCorreo=${#strings.substringAfter(#strings.substringAfter(entry.key, '|'), '|')}">
+                        <div class="usuario-info">
+                            <div class="usuario-avatar" th:text="${#strings.substring(usuarioNombre, 0, 1)}">U</div>
+                            <div class="usuario-datos">
+                                <h3 th:text="${usuarioNombre}">Nombre Usuario</h3>
+                                <p th:text="${usuarioCorreo}">correo@ejemplo.com</p>
+                            </div>
+                        </div>
+                        <div class="usuario-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" th:text="${#lists.size(entry.value)}">0</div>
+                                <div class="stat-label">Pedidos</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">0</div>
+                                <div class="stat-label">Pendientes</div>
+                            </div>
+                        </div>
+                        <button class="btn-ver-pedidos" th:onclick="|togglePedidos('${usuarioId}')|">
+                            <i class="bi bi-eye-slash"></i> Ocultar Pedidos
+                        </button>
+                    </div>
+                    
+                    <!-- Lista de Pedidos del Usuario -->
+                    <div class="pedidos-lista" th:id="|pedidos-${usuarioId}|">
+                        <div class="pedido-item" th:each="pedido : ${entry.value}">
+                            <div class="pedido-header">
+                                <span class="pedido-id">Pedido #<span th:text="${pedido.id}">...</span></span>
+                                <span class="pedido-fecha" th:text="${pedido.fechaAlquiler}">01/01/2024</span>
+                            </div>
+                            
+                            <div class="pedido-detalles">
+                                <div class="detalle-item">
+                                    <span class="detalle-label">Total:</span>
+                                    <span class="detalle-valor">$<span th:text="${pedido.total}">0</span></span>
+                                </div>
+                                <div class="detalle-item">
+                                    <span class="detalle-label">Items:</span>
+                                    <span class="detalle-valor" th:text="${pedido.items.size()}">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pedido-acciones">
+                                <span class="estado-badge" th:class="|estado-badge estado-${pedido.estado}|" th:text="${pedido.estado}">PENDIENTE</span>
+                                <select class="estado-select" th:id="|estado-${pedido.id}|">
+                                    <option value="PENDIENTE">Pendiente</option>
+                                    <option value="CONFIRMADO">Confirmado</option>
+                                    <option value="EN_CURSO">En Curso</option>
+                                    <option value="COMPLETADO">Completado</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                </select>
+                                <button class="btn-cambiar" th:onclick="|cambiarEstado('${pedido.id}')|">
+                                    <i class="bi bi-arrow-repeat"></i> Cambiar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Debug: verificar datos
+        document.addEventListener('DOMContentLoaded', function() {
+            const usuarioCards = document.querySelectorAll('.usuario-card');
+            console.log('Total de usuarios con pedidos:', usuarioCards.length);
+            
+            const pedidosListas = document.querySelectorAll('.pedidos-lista');
+            pedidosListas.forEach((lista, index) => {
+                const pedidos = lista.querySelectorAll('.pedido-item');
+                console.log(`Usuario ${index + 1}: ${pedidos.length} pedidos`);
+            });
+        });
+        
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+        }
+        
+        function togglePedidos(usuarioId) {
+            const pedidosDiv = document.getElementById('pedidos-' + usuarioId);
+            pedidosDiv.classList.toggle('hide');
+            
+            // Cambiar el texto del botón
+            const btn = event.target.closest('.btn-ver-pedidos');
+            const icon = btn.querySelector('i');
+            const isHidden = pedidosDiv.classList.contains('hide');
+            
+            if (isHidden) {
+                icon.className = 'bi bi-eye';
+                btn.innerHTML = '<i class="bi bi-eye"></i> Ver Pedidos';
+            } else {
+                icon.className = 'bi bi-eye-slash';
+                btn.innerHTML = '<i class="bi bi-eye-slash"></i> Ocultar Pedidos';
+            }
+        }
+        
+        function cambiarEstado(alquilerId) {
+            const selectElement = document.getElementById('estado-' + alquilerId);
+            const nuevoEstado = selectElement.value;
+            const alertBox = document.getElementById('alertBox');
+            
+            if (!confirm('¿Estás seguro de cambiar el estado de este pedido?')) {
+                return;
+            }
+            
+            fetch('/alquiler/admin/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `alquilerId=${alquilerId}&nuevoEstado=${nuevoEstado}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'OK') {
+                    alertBox.className = 'alert success';
+                    alertBox.innerHTML = '<i class="bi bi-check-circle"></i> Estado actualizado correctamente';
+                    alertBox.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alertBox.className = 'alert error';
+                    alertBox.innerHTML = '<i class="bi bi-x-circle"></i> ' + data;
+                    alertBox.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                alertBox.className = 'alert error';
+                alertBox.innerHTML = '<i class="bi bi-x-circle"></i> Error al cambiar estado: ' + error;
+                alertBox.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

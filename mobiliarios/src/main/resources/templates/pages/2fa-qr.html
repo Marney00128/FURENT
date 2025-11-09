@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar 2FA | FURENT</title>
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/editar-perfil.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <main class="edit-profile-container" style="padding-top: 2rem;">
+        <div class="container" style="max-width: 600px;">
+            <div class="edit-card">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-qr-code"></i>
+                    </div>
+                    <div>
+                        <h2>Escanea el Código QR</h2>
+                        <p>Paso 2 de 3: Configura Google Authenticator</p>
+                    </div>
+                </div>
+
+                <!-- Instrucciones -->
+                <div style="background: #e3f2fd; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #2196f3;">
+                    <h3 style="margin: 0 0 1rem 0; color: #1565c0; font-size: 1.1rem;">
+                        <i class="bi bi-info-circle"></i> Instrucciones
+                    </h3>
+                    <ol style="margin: 0; padding-left: 1.5rem; color: #666; line-height: 1.8;">
+                        <li>Abre la app <strong>Google Authenticator</strong> en tu teléfono</li>
+                        <li>Toca el botón <strong>+</strong> para agregar una cuenta</li>
+                        <li>Selecciona <strong>"Escanear código QR"</strong></li>
+                        <li>Escanea el código que aparece abajo</li>
+                    </ol>
+                </div>
+
+                <!-- Código QR -->
+                <div style="text-align: center; margin: 2rem 0;">
+                    <!-- Método 1: Usando Google Charts API (más confiable) -->
+                    <div id="qrcode-image" style="display: inline-block; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <img id="qr-img" alt="QR Code" style="width: 256px; height: 256px;">
+                    </div>
+                    
+                    <!-- Método 2: Fallback con QRCode.js -->
+                    <div id="qrcode" style="display: none; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"></div>
+                </div>
+
+                <!-- Clave secreta manual -->
+                <div style="background: #fff3cd; padding: 1.5rem; border-radius: 12px; margin: 2rem 0; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0 0 0.5rem 0; color: #856404; font-weight: 600;">
+                        <i class="bi bi-key"></i> ¿No puedes escanear el código?
+                    </p>
+                    <p style="margin: 0 0 1rem 0; color: #666; font-size: 0.9rem;">
+                        Ingresa esta clave manualmente en Google Authenticator:
+                    </p>
+                    <div style="background: white; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <code th:text="${secret}" style="font-size: 1.2rem; letter-spacing: 0.2rem; color: #333; font-weight: 600;">SECRET_KEY</code>
+                    </div>
+                </div>
+
+                <!-- Formulario de verificación -->
+                <form action="/user-account/2fa/verify" method="post" class="edit-form">
+                    <h3 style="margin: 2rem 0 1rem 0; color: #333;">Verificar Configuración</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Ingresa el código de 6 dígitos que aparece en tu app para verificar que todo funciona correctamente.
+                    </p>
+
+                    <div class="form-group">
+                        <label for="code">
+                            <i class="bi bi-shield-check"></i> Código de Verificación
+                        </label>
+                        <input type="text" 
+                               id="code" 
+                               name="code" 
+                               required
+                               maxlength="6"
+                               pattern="[0-9]{6}"
+                               placeholder="000000"
+                               autofocus
+                               style="text-align: center; font-size: 1.8rem; letter-spacing: 0.5rem; font-family: 'Courier New', monospace;">
+                        <small class="form-hint">
+                            <i class="bi bi-info-circle"></i> El código cambia cada 30 segundos
+                        </small>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; gap: 1rem;">
+                        <a href="/user-account/2fa/setup" class="btn btn-outline" style="flex: 1;">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" style="flex: 2;">
+                            <i class="bi bi-check-circle"></i> Verificar y Activar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        // Obtener la URL del QR Code desde Thymeleaf
+        const qrCodeUrl = /*[[${qrCodeUrl}]]*/ '';
+        
+        console.log('QR Code URL:', qrCodeUrl);
+        
+        if (qrCodeUrl) {
+            // Método 1: Usar Google Charts API (más confiable y simple)
+            const googleChartsUrl = 'https://chart.googleapis.com/chart?chs=256x256&cht=qr&chl=' + encodeURIComponent(qrCodeUrl);
+            document.getElementById('qr-img').src = googleChartsUrl;
+            document.getElementById('qrcode-image').style.display = 'inline-block';
+            
+            // Método 2: Fallback con QRCode.js si Google Charts falla
+            document.getElementById('qr-img').onerror = function() {
+                console.log('Google Charts falló, usando QRCode.js');
+                document.getElementById('qrcode-image').style.display = 'none';
+                document.getElementById('qrcode').style.display = 'inline-block';
+                
+                try {
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: qrCodeUrl,
+                        width: 256,
+                        height: 256,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                } catch (e) {
+                    console.error('Error generando QR con QRCode.js:', e);
+                    alert('Error al generar el código QR. Por favor, usa la clave manual.');
+                }
+            };
+        } else {
+            console.error('No se recibió la URL del QR Code');
+            alert('Error: No se pudo generar el código QR. Por favor, usa la clave manual.');
+        }
+
+        // Auto-formatear código
+        document.getElementById('code').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

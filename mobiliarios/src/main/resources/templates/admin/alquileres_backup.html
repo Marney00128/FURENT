@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Alquileres | Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-header h1 {
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .admin-nav {
+            background: white;
+            padding: 15px 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .admin-nav a {
+            color: #667eea;
+            text-decoration: none;
+            margin-right: 25px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .admin-nav a:hover { color: #764ba2; }
+        .admin-nav a.active { color: #764ba2; font-weight: 700; }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-card i {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card.pendiente i { color: #f39c12; }
+        .stat-card.confirmado i { color: #3498db; }
+        .stat-card.en-curso i { color: #9b59b6; }
+        .stat-card.completado i { color: #27ae60; }
+        .stat-card.cancelado i { color: #e74c3c; }
+        
+        .stat-card .number {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-card .label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .alquileres-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .table-header h2 {
+            font-size: 22px;
+            color: #2c3e50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .estado-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .estado-PENDIENTE { background: #fff3cd; color: #856404; }
+        .estado-CONFIRMADO { background: #d1ecf1; color: #0c5460; }
+        .estado-EN_CURSO { background: #e2d5f0; color: #6f42c1; }
+        .estado-COMPLETADO { background: #d4edda; color: #155724; }
+        .estado-CANCELADO { background: #f8d7da; color: #721c24; }
+        
+        .estado-select {
+            padding: 8px 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .estado-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn-cambiar {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-cambiar:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1><i class="bi bi-calendar-check"></i> Gestión de Alquileres</h1>
+    </div>
+    
+    <div class="admin-nav">
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/productos">Productos</a>
+        <a href="/admin/usuarios">Usuarios</a>
+        <a href="/alquiler/admin/listar" class="active">Alquileres</a>
+        <a href="/alquiler/admin/pedidos">Pedidos</a>
+        <a href="/logout" style="float: right; color: #e74c3c;">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </a>
+    </div>
+    
+    <div class="container">
+        <div id="alertBox" class="alert"></div>
+        
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card pendiente">
+                <i class="bi bi-clock-history"></i>
+                <div class="number" th:text="${#lists.size(#lists.filter(alquileres, a -> a.estado == 'PENDIENTE'))}">0</div>
+                <div class="label">Pendientes</div>
+            </div>
+            <div class="stat-card confirmado">
+                <i class="bi bi-check-circle"></i>
+                <div class="number" th:text="${#lists.size(#lists.filter(alquileres, a -> a.estado == 'CONFIRMADO'))}">0</div>
+                <div class="label">Confirmados</div>
+            </div>
+            <div class="stat-card en-curso">
+                <i class="bi bi-arrow-repeat"></i>
+                <div class="number" th:text="${#lists.size(#lists.filter(alquileres, a -> a.estado == 'EN_CURSO'))}">0</div>
+                <div class="label">En Curso</div>
+            </div>
+            <div class="stat-card completado">
+                <i class="bi bi-check-all"></i>
+                <div class="number" th:text="${#lists.size(#lists.filter(alquileres, a -> a.estado == 'COMPLETADO'))}">0</div>
+                <div class="label">Completados</div>
+            </div>
+            <div class="stat-card cancelado">
+                <i class="bi bi-x-circle"></i>
+                <div class="number" th:text="${#lists.size(#lists.filter(alquileres, a -> a.estado == 'CANCELADO'))}">0</div>
+                <div class="label">Cancelados</div>
+            </div>
+        </div>
+        
+        <!-- Tabla de Alquileres -->
+        <div class="alquileres-table">
+            <div class="table-header">
+                <h2>Todos los Alquileres</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha Alquiler</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Total</th>
+                        <th>Estado Actual</th>
+                        <th>Cambiar Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="alquiler : ${alquileres}">
+                        <td th:text="${#strings.substring(alquiler.id, 0, 8)}">...</td>
+                        <td>
+                            <strong th:text="${alquiler.usuarioNombre}">Cliente</strong><br>
+                            <small th:text="${alquiler.usuarioCorreo}" style="color: #7f8c8d;">correo@ejemplo.com</small>
+                        </td>
+                        <td th:text="${#temporals.format(alquiler.fechaAlquiler, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                        <td th:text="${#temporals.format(alquiler.fechaInicio, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                        <td th:text="${#temporals.format(alquiler.fechaFin, 'dd/MM/yyyy HH:mm')}">05/01/2024</td>
+                        <td><strong th:text="'$' + ${alquiler.total}">$0</strong></td>
+                        <td>
+                            <span class="estado-badge" th:classappend="'estado-' + ${alquiler.estado}" th:text="${alquiler.estado}">PENDIENTE</span>
+                        </td>
+                        <td>
+                            <select class="estado-select" th:id="'estado-' + ${alquiler.id}">
+                                <option value="PENDIENTE" th:selected="${alquiler.estado == 'PENDIENTE'}">Pendiente</option>
+                                <option value="CONFIRMADO" th:selected="${alquiler.estado == 'CONFIRMADO'}">Confirmado</option>
+                                <option value="EN_CURSO" th:selected="${alquiler.estado == 'EN_CURSO'}">En Curso</option>
+                                <option value="COMPLETADO" th:selected="${alquiler.estado == 'COMPLETADO'}">Completado</option>
+                                <option value="CANCELADO" th:selected="${alquiler.estado == 'CANCELADO'}">Cancelado</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn-cambiar" th:onclick="'cambiarEstado(\'' + ${alquiler.id} + '\')'">
+                                <i class="bi bi-arrow-repeat"></i> Cambiar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        function cambiarEstado(alquilerId) {
+            const selectElement = document.getElementById('estado-' + alquilerId);
+            const nuevoEstado = selectElement.value;
+            const alertBox = document.getElementById('alertBox');
+            
+            if (!confirm('¿Estás seguro de cambiar el estado de este alquiler?')) {
+                return;
+            }
+            
+            fetch('/alquiler/admin/cambiar-estado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `alquilerId=${alquilerId}&nuevoEstado=${nuevoEstado}`
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'OK') {
+                    alertBox.className = 'alert success';
+                    alertBox.textContent = '✓ Estado actualizado correctamente';
+                    alertBox.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    alertBox.className = 'alert error';
+                    alertBox.textContent = '✗ ' + data;
+                    alertBox.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                alertBox.className = 'alert error';
+                alertBox.textContent = '✗ Error al cambiar estado: ' + error;
+                alertBox.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>

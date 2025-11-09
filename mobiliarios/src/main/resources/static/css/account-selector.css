@@ -1,0 +1,400 @@
+/* Account Selector Styles */
+.account-selector-body {
+    background: linear-gradient(135deg, #a4d92e 0%, #0891b2 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.account-selector-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.account-selector-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 3rem 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.selector-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.selector-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #a4d92e 0%, #0891b2 100%);
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(164, 217, 46, 0.3);
+}
+
+.selector-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+.selector-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.selector-header p {
+    font-size: 1rem;
+    color: #718096;
+}
+
+.accounts-list {
+    margin-bottom: 1.5rem;
+}
+
+.account-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.account-item:hover {
+    border-color: #0891b2;
+    background: #f7fafc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.15);
+}
+
+.account-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-initials {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    text-transform: uppercase;
+}
+
+.account-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.account-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-email {
+    font-size: 1.05rem;
+    color: #718096;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.remove-account-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    color: #718096;
+    opacity: 0;
+}
+
+.account-item:hover .remove-account-btn {
+    opacity: 1;
+}
+
+.remove-account-btn:hover {
+    background: #fee;
+    color: #e53e3e;
+    transform: scale(1.1);
+}
+
+.remove-account-btn i {
+    font-size: 1.3rem;
+}
+
+.add-account-section {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.add-account-btn {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border: 2px dashed #cbd5e0;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.add-account-btn:hover {
+    border-color: #0891b2;
+    background: #f7fafc;
+    transform: translateY(-2px);
+}
+
+.add-account-btn .account-avatar {
+    background: linear-gradient(135deg, #a4d92e 0%, #0891b2 100%);
+}
+
+.add-account-btn .account-avatar i {
+    font-size: 1.8rem;
+    color: white;
+}
+
+.add-account-btn .account-name {
+    color: #0891b2;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.add-account-btn .account-email {
+    color: #718096;
+}
+
+.selector-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.selector-footer p {
+    margin: 0;
+    font-size: 1rem;
+    color: #718096;
+}
+
+.selector-footer a {
+    color: #0891b2;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.selector-footer a:hover {
+    color: #0e7490;
+    text-decoration: underline;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.alert-error {
+    background: #fee;
+    color: #c53030;
+    border-left: 4px solid #e53e3e;
+}
+
+.alert-success {
+    background: #f0fff4;
+    color: #276749;
+    border-left: 4px solid #48bb78;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .account-selector-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .selector-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .selector-icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .selector-icon i {
+        font-size: 2rem;
+    }
+
+    .account-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .avatar-initials { font-size: 1.25rem; }
+
+    .account-name { font-size: 1.1rem; }
+
+    .account-email { font-size: 0.95rem; }
+}
+
+/* Loading Animation */
+.accounts-list.loading {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #0891b2;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Dark Mode Styles */
+body.dark-mode.account-selector-body {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+body.dark-mode .account-selector-card {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode .selector-header h2 {
+    color: #e2e8f0;
+}
+
+body.dark-mode .selector-header p {
+    color: #cbd5e0;
+}
+
+body.dark-mode .account-item {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .account-item:hover {
+    background: rgba(8, 145, 178, 0.1);
+    border-color: #0891b2;
+}
+
+body.dark-mode .account-name {
+    color: #e2e8f0;
+}
+
+body.dark-mode .account-email {
+    color: #94a3b8;
+}
+
+body.dark-mode .remove-account-btn {
+    color: #94a3b8;
+}
+
+body.dark-mode .remove-account-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+body.dark-mode .add-account-btn {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .add-account-btn:hover {
+    background: rgba(8, 145, 178, 0.1);
+    border-color: #0891b2;
+}
+
+body.dark-mode .add-account-btn .account-name {
+    color: #22d3ee;
+}
+
+body.dark-mode .add-account-btn .account-email {
+    color: #94a3b8;
+}
+
+body.dark-mode .selector-footer {
+    border-top-color: rgba(100, 116, 139, 0.3);
+}
+
+body.dark-mode .selector-footer p {
+    color: #94a3b8;
+}
+
+body.dark-mode .selector-footer a {
+    color: #22d3ee;
+}
+
+body.dark-mode .selector-footer a:hover {
+    color: #0891b2;
+}
+
+body.dark-mode .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-left-color: #ef4444;
+}
+
+body.dark-mode .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #6ee7b7;
+    border-left-color: #10b981;
+}

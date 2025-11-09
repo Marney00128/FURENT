@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nosotros | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/cart-preview.css}">
+    <link rel="stylesheet" th:href="@{/css/header-adjustments.css}">
+    <link rel="stylesheet" th:href="@{/css/payment-notifications.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script th:src="@{/js/cart-preview.js}"></script>
+</head>
+
+<body class="page-about">
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div class="contact-info">
+                <span><i class="bi bi-telephone"></i> +57 300 123 4567</span>
+                <span><i class="bi bi-envelope"></i> info@furniturerent.com</span>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-instagram"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+                <a href="#"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo" aria-label="Ir al inicio">
+                <i class="bi bi-house-heart"></i>
+                <span>FU<strong>RENT</strong></span>
+            </a>
+
+            <nav class="nav-principal">
+                <a href="/">Inicio</a>
+                <a href="/about" class="active">Nosotros</a>
+                <a href="/store">Alquilar</a>
+                <a href="/contact">Contacto</a>
+                <a th:if="${session.usuario}" href="/alquiler/mis-alquileres">
+                    <i class="bi bi-calendar-check"></i> Mis alquileres
+                </a>
+                <a th:if="${session.usuario}" href="/favoritos">
+                    <i class="bi bi-heart"></i> Favoritos
+                </a>
+            </nav>
+            
+            <!-- Menú de usuario logueado -->
+            <div class="user-menu" th:if="${session.usuario}">
+                <div class="user-menu-toggle">
+                    <div class="user-avatar" th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">U</div>
+                    <span th:text="${session.usuarioNombre}">Usuario</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <strong th:text="${session.usuarioNombre}">Usuario</strong>
+                        <p th:text="${session.usuario.correo}">email@example.com</p>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="/user-account">
+                            <i class="bi bi-person"></i> Mi cuenta
+                        </a>
+                        <a href="/alquiler/mis-alquileres">
+                            <i class="bi bi-calendar-check"></i> Mis alquileres
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/logout" class="logout-link">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón de notificaciones de pago (campanita) -->
+            <button class="payment-bell-btn" id="paymentBellBtn" th:if="${session.usuario}" aria-label="Notificaciones de pago" title="Notificaciones de pago">
+                <i class="bi bi-bell-fill"></i>
+                <span class="payment-notification-badge" id="paymentNotificationBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón del carrito -->
+            <button class="cart-btn-header" onclick="toggleCart()" aria-label="Ver carrito" title="Ver carrito de compras">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle-btn" aria-label="Cambiar tema" title="Cambiar entre modo claro y oscuro">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            
+            <!-- Botón de login si no hay sesión -->
+            <a th:unless="${session.usuario}" href="/login" class="login-btn">
+                <i class="bi bi-person-circle"></i> Iniciar sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-overlay"></div>
+        <div class="container">
+            <h1 class="page-title">Sobre nosotros</h1>
+            <p class="page-breadcrumb"><a href="/">Inicio</a> / Nosotros</p>
+        </div>
+    </section>
+
+    <!-- About Content -->
+    <main class="content-principal container">
+        <div class="section-header">
+            <h2 class="section-title">Nuestra historia</h2>
+            <p class="section-subtitle">Más de 10 años transformando eventos en experiencias inolvidables</p>
+        </div>
+
+        <div class="content-about">
+            <div class="image-about-page">
+                <img src="/img/nosotros.jpg" alt="Nosotros">
+            </div>
+
+            <div class="info-about-page">
+                <p>En FURENT nos especializamos en el alquiler de mobiliario para todo tipo de eventos
+                    desde bodas y conferencias hasta ferias y reuniones corporativas. Con una amplia variedad de estilos y opciones
+                    ofrecemos soluciones elegantes, funcionales y adaptadas a las necesidades de cada cliente.</p>
+
+                <p>Nacimos con la misión de ofrecer soluciones versátiles y elegantes para cada ocasión. 
+                    Con un equipo de profesionales apasionados por el diseño y la funcionalidad
+                    trabajamos día a día para asegurar que cada experiencia con nosotros sea única y memorable.</p>
+            </div>
+        </div>
+
+        <!-- Mission & Vision -->
+        <section class="mission-vision">
+            <div class="mv-grid">
+                <div class="mv-card">
+                    <div class="mv-icon">
+                        <i class="bi bi-bullseye"></i>
+                    </div>
+                    <h3>Nuestra misión</h3>
+                    <p>Proporcionar mobiliario de alta calidad que transforme cada evento en una experiencia memorable, superando las expectativas de nuestros clientes con servicio excepcional.</p>
+                </div>
+                <div class="mv-card">
+                    <div class="mv-icon">
+                        <i class="bi bi-eye"></i>
+                    </div>
+                    <h3>Nuestra visión</h3>
+                    <p>Ser la empresa líder en alquiler de mobiliario para eventos, reconocida por nuestra innovación, calidad y compromiso con la satisfacción del cliente.</p>
+                </div>
+                <div class="mv-card">
+                    <div class="mv-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
+                    <h3>Nuestros valores</h3>
+                    <p>Calidad, compromiso, innovación y excelencia en el servicio son los pilares que guían cada una de nuestras acciones y decisiones.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="team-section">
+            <div class="section-header">
+                <h2 class="section-title">Nuestro equipo</h2>
+                <p class="section-subtitle">Profesionales dedicados a hacer realidad tus eventos</p>
+            </div>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h4>María González</h4>
+                    <p class="member-role">Directora General</p>
+                    <p class="member-bio">10+ años de experiencia en gestión de eventos</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h4>Carlos Ramírez</h4>
+                    <p class="member-role">Gerente de Operaciones</p>
+                    <p class="member-bio">Experto en logística y coordinación</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h4>Ana Martínez</h4>
+                    <p class="member-role">Diseñadora de Eventos</p>
+                    <p class="member-bio">Especialista en ambientación y diseño</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="grid-footer container">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <i class="bi bi-house-heart"></i>
+                        <span>FU<strong>RENT</strong></span>
+                    </div>
+                    <p class="footer-description">Transformamos tus eventos con mobiliario de alta calidad y servicio excepcional.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Categorías</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-chevron-right"></i> Eventos Corporativos</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Bodas y Celebraciones</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Fiestas Infantiles</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Quinceañeros</a>    
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Sobre Nosotros</h3>
+                    <nav class="footer-menu">
+                        <a href="/about"><i class="bi bi-chevron-right"></i> Nuestra Historia</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Misión y Visión</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Política de Privacidad</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Términos y Condiciones</a>
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-telephone"></i> +57 300 123 4567</a>
+                        <a href="#"><i class="bi bi-envelope"></i> info@furniturerent.com</a>
+                        <a href="#"><i class="bi bi-geo-alt"></i> Bogotá, Colombia</a>
+                        <a href="#"><i class="bi bi-clock"></i> Lun - Sáb: 8am - 6pm</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">© 2024 FURENT. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Script de notificaciones de pago -->
+    <script th:src="@{/js/payment-notifications.js}"></script>
+    
+    <!-- Vista Previa del Carrito -->
+    <div th:replace="~{fragments/cart-preview :: cart-preview}"></div>
+    
+    <!-- Botón Admin -->
+    <div th:replace="~{fragments/admin-button :: admin-button}"></div>
+
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Sidebar Fragment -->
+    <aside th:fragment="sidebar(activePage)" class="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-house-heart"></i>
+            <h2>FURENT <span>Admin</span></h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="nav-item" th:classappend="${activePage == 'dashboard'} ? 'active' : ''">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/usuarios" class="nav-item" th:classappend="${activePage == 'usuarios'} ? 'active' : ''">
+                <i class="bi bi-people"></i>
+                <span>Usuarios</span>
+            </a>
+            <a href="/admin/productos" class="nav-item" th:classappend="${activePage == 'productos'} ? 'active' : ''">
+                <i class="bi bi-box-seam"></i>
+                <span>Productos</span>
+            </a>
+            <a href="/admin/pedidos" class="nav-item" th:classappend="${activePage == 'pedidos'} ? 'active' : ''">
+                <i class="bi bi-cart-check"></i>
+                <span>Pedidos</span>
+            </a>
+            <a href="/admin/categorias" class="nav-item" th:classappend="${activePage == 'categorias'} ? 'active' : ''">
+                <i class="bi bi-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <a href="/admin/reportes" class="nav-item" th:classappend="${activePage == 'registros'} ? 'active' : ''">
+                <i class="bi bi-journal-text"></i>
+                <span>Registros</span>
+            </a>
+            <a href="/admin/reportes-analytics" class="nav-item" th:classappend="${activePage == 'reportes-analytics'} ? 'active' : ''">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Reportes</span>
+            </a>
+            <a href="/admin/configuracion" class="nav-item" th:classappend="${activePage == 'configuracion'} ? 'active' : ''">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button onclick="toggleTheme()" class="nav-item theme-toggle" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left; display: flex; align-items: center; padding: 15px 25px; color: rgba(255,255,255,0.8); transition: all 0.3s ease; border-left: 3px solid transparent;">
+                <i class="bi bi-moon-stars theme-icon-dark" style="font-size: 20px; margin-right: 15px;"></i>
+                <i class="bi bi-sun theme-icon-light" style="display: none; font-size: 20px; margin-right: 15px;"></i>
+                <span class="theme-text-dark" style="font-size: 15px; font-weight: 500;">Modo Oscuro</span>
+                <span class="theme-text-light" style="display: none; font-size: 15px; font-weight: 500;">Modo Claro</span>
+            </button>
+            <a href="/" class="nav-item">
+                <i class="bi bi-house-door"></i>
+                <span>Ir al Sitio</span>
+            </a>
+            <a href="/logout" class="nav-item logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+    
+    <script th:src="@{/js/theme-toggle.js}"></script>
+</body>
+</html>

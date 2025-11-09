@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis favoritos | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/cart-preview.css}">
+    <link rel="stylesheet" th:href="@{/css/header-adjustments.css}">
+    <link rel="stylesheet" th:href="@{/css/payment-notifications.css}">
+    <link rel="stylesheet" th:href="@{/css/product-cards-ultra.css}">
+    <link rel="stylesheet" th:href="@{/css/resenas.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script th:src="@{/js/cart-preview.js}"></script>
+    <style>
+        .favoritos-page { padding: 60px 0; min-height: 70vh; }
+        .favoritos-container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .favoritos-header { margin-bottom: 40px; text-align: center; }
+        .favoritos-header h1 { font-size: 36px; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .favoritos-header h1 i { color: #ff4757; font-size: 42px; animation: heartBeat 1.5s ease-in-out infinite; }
+        .favoritos-header p { color: #7f8c8d; font-size: 18px; }
+        
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(0.9); }
+            20%, 40% { transform: scale(1.1); }
+        }
+        
+        /* Grid usando el mismo estilo de store - MÁS COMPACTO */
+        .favoritos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 30px 0;
+        }
+        
+        /* Ajustes para tarjetas más compactas */
+        .favoritos-grid .product-card-modern {
+            border-radius: 16px;
+        }
+        
+        .favoritos-grid .product-card-image-container {
+            height: 220px;
+        }
+        
+        .favoritos-grid .product-card-content {
+            padding: 18px;
+        }
+        
+        .favoritos-grid .product-card-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            min-height: 40px;
+            line-height: 1.3;
+        }
+        
+        .favoritos-grid .product-rating-container {
+            padding: 8px 0;
+            margin-bottom: 8px;
+        }
+        
+        .favoritos-grid .product-card-stock-info {
+            margin-bottom: 12px;
+        }
+        
+        .favoritos-grid .product-card-stock-badge {
+            padding: 6px 12px;
+            font-size: 11px;
+        }
+        
+        .favoritos-grid .product-card-price-amount {
+            font-size: 20px;
+        }
+        
+        .favoritos-grid .product-card-price-period {
+            font-size: 12px;
+        }
+        
+        .favoritos-grid .product-card-add-btn {
+            padding: 10px 18px;
+            font-size: 13px;
+        }
+        
+        .favoritos-grid .product-card-category-badge {
+            padding: 6px 12px;
+            font-size: 10px;
+        }
+        
+        .favoritos-grid .btn-ver-resenas {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+        
+        .favoritos-grid .product-stars {
+            gap: 2px;
+        }
+        
+        .favoritos-grid .product-star {
+            font-size: 14px;
+        }
+        
+        .favoritos-grid .product-rating-number {
+            font-size: 12px;
+        }
+        
+        .favoritos-grid .resenas-count {
+            font-size: 11px;
+        }
+        
+        /* Botón de zoom - compacto */
+        .favoritos-grid .product-card-zoom-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(3, 123, 192, 0.95);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 5;
+            opacity: 0;
+            transform: scale(0.8);
+            box-shadow: 0 4px 12px rgba(3, 123, 192, 0.4);
+        }
+        
+        .favoritos-grid .product-card-modern:hover .product-card-zoom-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .favoritos-grid .product-card-zoom-btn i {
+            font-size: 1.1rem;
+            color: white;
+        }
+        
+        .favoritos-grid .product-card-zoom-btn:hover {
+            background: #037bc0;
+            transform: scale(1.1);
+        }
+        
+        /* Estilo para imagen en modal */
+        .swal-image-zoom {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        
+        /* Botón de eliminar favorito estilo moderno - MÁS COMPACTO */
+        .favoritos-grid .remove-favorite-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .favoritos-grid .remove-favorite-btn i {
+            font-size: 1.1rem;
+            color: #ff4757;
+            animation: heartBeat 1.5s ease-in-out infinite;
+        }
+        .favoritos-grid .remove-favorite-btn:hover {
+            background: #ff4757;
+            transform: scale(1.1);
+        }
+        .favoritos-grid .remove-favorite-btn:hover i {
+            color: white;
+        }
+        
+        /* Dark mode para favoritos */
+        body.dark-mode .favoritos-header h1 {
+            color: #e5e7eb;
+        }
+        
+        body.dark-mode .favoritos-header p {
+            color: #9ca3af;
+        }
+        
+        body.dark-mode .favoritos-count {
+            background: #ff4757;
+        }
+        
+        body.dark-mode .empty-favorites {
+            background: #1f2937;
+        }
+        
+        body.dark-mode .empty-favorites h2 {
+            color: #e5e7eb;
+        }
+        
+        body.dark-mode .empty-favorites p {
+            color: #9ca3af;
+        }
+        
+        body.dark-mode .remove-favorite-btn {
+            background: rgba(30, 41, 59, 0.95);
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+            .favoritos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+            
+            .favoritos-grid .product-card-image-container {
+                height: 200px;
+            }
+            
+            .favoritos-grid .product-card-content {
+                padding: 15px;
+            }
+            
+            .favoritos-grid .product-card-title {
+                font-size: 15px;
+                min-height: 38px;
+            }
+            
+            .favoritos-grid .product-card-price-amount {
+                font-size: 18px;
+            }
+            
+            .favoritos-grid .remove-favorite-btn {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .favoritos-grid .remove-favorite-btn i {
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .favoritos-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+            
+            .favoritos-grid .product-card-image-container {
+                height: 180px;
+            }
+        }
+        
+        .empty-favorites { 
+            text-align: center; 
+            padding: 80px 20px; 
+            background: white; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .empty-favorites i { 
+            font-size: 120px; 
+            color: #ff4757; 
+            margin-bottom: 30px; 
+            opacity: 0.3;
+        }
+        .empty-favorites h2 { 
+            font-size: 32px; 
+            color: #2c3e50; 
+            margin-bottom: 15px; 
+        }
+        .empty-favorites p { 
+            font-size: 18px; 
+            color: #7f8c8d; 
+            margin-bottom: 30px; 
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #8cbc00, #037bc0); 
+            color: white; 
+            padding: 15px 40px; 
+            border-radius: 10px; 
+            text-decoration: none; 
+            display: inline-block; 
+            font-weight: 600; 
+            transition: all 0.3s; 
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 15px rgba(140, 188, 0, 0.3); 
+        }
+        
+        .favoritos-count {
+            background: #ff4757;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .favoritos-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+            .favorito-image-container { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div class="contact-info">
+                <span><i class="bi bi-telephone"></i> +57 300 123 4567</span>
+                <span><i class="bi bi-envelope"></i> info@furniturerent.com</span>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-instagram"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+                <a href="#"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo" aria-label="Ir al inicio">
+                <i class="bi bi-house-heart"></i>
+                <span>FU<strong>RENT</strong></span>
+            </a>
+
+            <nav class="nav-principal">
+                <a href="/">Inicio</a>
+                <a href="/about">Nosotros</a>
+                <a href="/store">Alquilar</a>
+                <a href="/contact">Contacto</a>
+                <a th:if="${session.usuario}" href="/alquiler/mis-alquileres">
+                    <i class="bi bi-calendar-check"></i> Mis alquileres
+                </a>
+                <a th:if="${session.usuario}" href="/favoritos" class="active">
+                    <i class="bi bi-heart-fill"></i> Favoritos
+                </a>
+            </nav>
+            
+            <!-- Menú de usuario logueado -->
+            <div class="user-menu" th:if="${session.usuario}">
+                <div class="user-menu-toggle">
+                    <div class="user-avatar" th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">U</div>
+                    <span th:text="${session.usuarioNombre}">Usuario</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <strong th:text="${session.usuarioNombre}">Usuario</strong>
+                        <p th:text="${session.usuario.correo}">email@example.com</p>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="/user-account">
+                            <i class="bi bi-person"></i> Mi cuenta
+                        </a>
+                        <a href="/alquiler/mis-alquileres">
+                            <i class="bi bi-calendar-check"></i> Mis alquileres
+                        </a>
+                        <a href="/favoritos" class="active">
+                            <i class="bi bi-heart-fill"></i> Mis favoritos
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/logout" class="logout-link">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón de notificaciones de pago (campanita) -->
+            <button class="payment-bell-btn" id="paymentBellBtn" th:if="${session.usuario}" aria-label="Notificaciones de pago" title="Notificaciones de pago">
+                <i class="bi bi-bell-fill"></i>
+                <span class="payment-notification-badge" id="paymentNotificationBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón del carrito -->
+            <button class="cart-btn-header" onclick="toggleCart()" aria-label="Ver carrito" title="Ver carrito de compras">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle-btn" aria-label="Cambiar tema" title="Cambiar entre modo claro y oscuro">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            
+            <!-- Botón de login si no hay sesión -->
+            <a th:unless="${session.usuario}" href="/login" class="login-btn">
+                <i class="bi bi-person-circle"></i> Iniciar sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-overlay"></div>
+        <div class="container">
+            <h1 class="page-title">Mis favoritos</h1>
+            <p class="page-breadcrumb"><a href="/">Inicio</a> / Favoritos</p>
+        </div>
+    </section>
+
+    <!-- Favoritos Page -->
+    <main class="favoritos-page">
+        <div class="favoritos-container">
+            <div class="favoritos-header">
+                <h1><i class="bi bi-heart-fill"></i> Mis productos favoritos</h1>
+                <p>Los productos que más te gustan en un solo lugar</p>
+                <span class="favoritos-count" th:if="${favoritos != null && !favoritos.isEmpty()}" 
+                      th:text="${favoritos.size()} + ' favorito' + (${favoritos.size()} != 1 ? 's' : '')">0 favoritos</span>
+            </div>
+
+            <!-- Empty Favorites -->
+            <div class="empty-favorites" th:if="${favoritos == null || favoritos.isEmpty()}">
+                <i class="bi bi-heart"></i>
+                <h2>No tienes favoritos aún</h2>
+                <p>¡Explora nuestro catálogo y marca tus productos favoritos!</p>
+                <a href="/store" class="btn-primary">Explorar catálogo</a>
+            </div>
+
+            <!-- Favoritos Grid -->
+            <div class="favoritos-grid" th:if="${favoritos != null && !favoritos.isEmpty()}">
+                <div class="product-card-modern" th:each="favorito : ${favoritos}">
+                    <!-- Imagen del producto -->
+                    <div class="product-card-image-wrapper">
+                        <div class="product-card-image-container">
+                            <img th:src="${favorito.imagenProducto != null ? favorito.imagenProducto : '/img/producto-default.jpg'}" 
+                                 th:alt="${favorito.nombreProducto}"
+                                 class="product-card-image">
+                            
+                            <!-- Badge de categoría -->
+                            <div class="product-card-category-badge" th:if="${favorito.categoriaProducto}">
+                                <i class="bi bi-tag-fill"></i>
+                                <span th:text="${favorito.categoriaProducto}">Categoría</span>
+                            </div>
+                            
+                            <!-- Botón de zoom -->
+                            <button class="product-card-zoom-btn" 
+                                    onclick="viewImageFromParent(this)"
+                                    title="Ver imagen completa">
+                                <i class="bi bi-zoom-in"></i>
+                            </button>
+                            
+                            <!-- Botón de eliminar favorito -->
+                            <button class="remove-favorite-btn" 
+                                    th:data-producto-id="${favorito.productoId}"
+                                    onclick="eliminarFavorito(this)"
+                                    title="Quitar de favoritos">
+                                <i class="bi bi-heart-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Contenido del producto -->
+                    <div class="product-card-content">
+                        <!-- Título -->
+                        <h3 class="product-card-title" th:text="${favorito.nombreProducto}">Nombre del Producto</h3>
+                        
+                        <!-- Rating Stars -->
+                        <div class="product-rating-container" th:attr="data-producto-id=${favorito.productoId}">
+                            <div class="product-stars-wrapper">
+                                <div class="product-stars">
+                                    <span class="product-star">★</span>
+                                    <span class="product-star">★</span>
+                                    <span class="product-star">★</span>
+                                    <span class="product-star">★</span>
+                                    <span class="product-star">★</span>
+                                </div>
+                                <span class="product-rating-number">0.0</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Stock badge -->
+                        <div class="product-card-stock-info">
+                            <div class="product-card-stock-badge stock-ok">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Disponible</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Precio y acción -->
+                        <div class="product-card-footer">
+                            <div class="product-card-price-box">
+                                <span class="product-card-price-amount" 
+                                      th:text="'$' + ${#numbers.formatDecimal(favorito.precioProducto, 1, 'POINT', 2, 'COMMA')}">$0</span>
+                                <span class="product-card-price-period">/ día</span>
+                            </div>
+                            
+                            <button class="product-card-add-btn" 
+                                    th:data-producto-id="${favorito.productoId}"
+                                    th:data-stock="999"
+                                    onclick="agregarAlCarrito(this)">
+                                <i class="bi bi-cart-plus-fill"></i>
+                                <span>Añadir</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="grid-footer container">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <i class="bi bi-house-heart"></i>
+                        <span>FU<strong>RENT</strong></span>
+                    </div>
+                    <p class="footer-description">Transformamos tus eventos con mobiliario de alta calidad y servicio excepcional.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Categorías</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-chevron-right"></i> Eventos Corporativos</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Bodas y Celebraciones</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Fiestas Infantiles</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Quinceañeros</a>    
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Sobre nosotros</h3>
+                    <nav class="footer-menu">
+                        <a href="/about"><i class="bi bi-chevron-right"></i> Nuestra historia</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Misión y visión</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Política de Privacidad</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Términos y Condiciones</a>
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-telephone"></i> +57 300 123 4567</a>
+                        <a href="#"><i class="bi bi-envelope"></i> info@furniturerent.com</a>
+                        <a href="#"><i class="bi bi-geo-alt"></i> Bogotá, Colombia</a>
+                        <a href="#"><i class="bi bi-clock"></i> Lun - Sáb: 8am - 6pm</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">© 2024 FURENT. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/resenas.js}"></script>
+    <script>
+        // Cargar contador al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarContadorCarrito();
+            // Cargar calificaciones de productos
+            if (typeof cargarCalificacionesProductos === 'function') {
+                cargarCalificacionesProductos();
+            }
+        });
+
+        // Eliminar de favoritos
+        function eliminarFavorito(button) {
+            const productoId = button.getAttribute('data-producto-id');
+            
+            Swal.fire({
+                title: '¿Quitar de favoritos?',
+                text: '¿Deseas eliminar este producto de tus favoritos?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4757',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, quitar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/favoritos/toggle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `productoId=${productoId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Agregar producto al carrito (igual que en store)
+        function agregarAlCarrito(boton) {
+            if (boton.disabled || boton.classList.contains('btn-disabled')) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Producto sin stock',
+                    text: 'Este producto no está disponible en este momento',
+                    confirmButtonColor: '#8cbc00'
+                });
+                return;
+            }
+            
+            const productoId = boton.getAttribute('data-producto-id');
+            const stockDisponible = parseInt(boton.getAttribute('data-stock')) || 999;
+            
+            Swal.fire({
+                title: 'Cantidad a Alquilar',
+                input: 'number',
+                inputLabel: `¿Cuántas unidades deseas alquilar? (Disponibles: ${stockDisponible})`,
+                inputValue: 1,
+                inputAttributes: {
+                    min: 1,
+                    max: stockDisponible,
+                    step: 1
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Agregar al Carrito',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#8cbc00',
+                preConfirm: (cantidad) => {
+                    if (!cantidad || cantidad < 1) {
+                        Swal.showValidationMessage('Debes ingresar al menos 1 unidad');
+                        return false;
+                    }
+                    if (cantidad > stockDisponible) {
+                        Swal.showValidationMessage(`Solo hay ${stockDisponible} unidades disponibles`);
+                        return false;
+                    }
+                    return cantidad;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const cantidad = result.value;
+                    
+                    boton.disabled = true;
+                    const textoOriginal = boton.innerHTML;
+                    boton.innerHTML = '<i class="bi bi-hourglass-split"></i> Agregando...';
+
+                    fetch('/carrito/agregar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `productoId=${productoId}&cantidad=${cantidad}&diasAlquiler=1`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Agregado!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            // Actualizar badge del carrito
+                            if (typeof actualizarContadorCarrito === 'function') {
+                                actualizarContadorCarrito();
+                            }
+                            // Animar el botón del carrito en el header
+                            const cartBtn = document.querySelector('.cart-btn-header');
+                            if (cartBtn) {
+                                cartBtn.style.animation = 'none';
+                                setTimeout(() => {
+                                    cartBtn.style.animation = 'cartShake 0.5s ease';
+                                }, 10);
+                            }
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#8cbc00'
+                            });
+                        }
+                        boton.disabled = false;
+                        boton.innerHTML = textoOriginal;
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error al agregar el producto',
+                            confirmButtonColor: '#8cbc00'
+                        });
+                        boton.disabled = false;
+                        boton.innerHTML = textoOriginal;
+                    });
+                }
+            });
+        }
+        
+        // Ver imagen en modal (igual que en store)
+        function viewImageFromParent(button) {
+            const card = button.closest('.product-card-modern');
+            const img = card.querySelector('.product-card-image');
+            const imgSrc = img.src;
+            const imgAlt = img.alt;
+            
+            Swal.fire({
+                imageUrl: imgSrc,
+                imageAlt: imgAlt,
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: '90%',
+                padding: '20px',
+                background: '#fff',
+                customClass: {
+                    image: 'swal-image-zoom'
+                }
+            });
+        }
+    </script>
+    
+    <!-- Script de notificaciones de pago -->
+    <script th:src="@{/js/payment-notifications.js}"></script>
+
+    <!-- Vista Previa del Carrito -->
+    <div th:replace="~{fragments/cart-preview :: cart-preview}"></div>
+    
+    <!-- Botón Admin -->
+    <div th:replace="~{fragments/admin-button :: admin-button}"></div>
+
+</body>
+</html>

@@ -1,0 +1,1072 @@
+/* ============================================
+   MODAL DE TARJETAS GUARDADAS - DISEÑO PREMIUM
+   ============================================ */
+
+/* Animaciones Globales */
+@keyframes fadeInBackdrop {
+    0% {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        backdrop-filter: blur(20px) saturate(180%);
+    }
+}
+
+@keyframes modalEntrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(-100px) rotateX(30deg);
+        filter: blur(10px);
+    }
+    60% {
+        opacity: 1;
+        transform: scale(1.05) translateY(10px) rotateX(-5deg);
+        filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0) rotateX(0deg);
+        filter: blur(0px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(140, 188, 0, 0.3),
+                    0 0 40px rgba(140, 188, 0, 0.2),
+                    0 0 60px rgba(140, 188, 0, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(140, 188, 0, 0.5),
+                    0 0 60px rgba(140, 188, 0, 0.3),
+                    0 0 90px rgba(140, 188, 0, 0.2);
+    }
+}
+
+@keyframes slideInCard {
+    0% {
+        opacity: 0;
+        transform: translateX(-50px) rotateY(-20deg);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0) rotateY(0deg);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Modal Container */
+.modal-tarjetas {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(20px) saturate(180%);
+    animation: fadeInBackdrop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    perspective: 2000px;
+    overflow-y: auto;
+}
+
+/* Modal Content - Compacto */
+.modal-tarjetas-content {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    margin: 3% auto;
+    padding: 0;
+    width: 85%;
+    max-width: 650px;
+    border-radius: 20px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 10px 30px rgba(164, 208, 7, 0.3);
+    animation: modalEntrance 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+    transform-style: preserve-3d;
+}
+
+/* Header con Gradiente Animado - Compacto */
+.modal-tarjetas-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(90deg, #a4d007 0%, #6fb800 25%, #3da08e 50%, #037bc0 100%);
+    background-size: 200% 100%;
+    animation: gradientShift 3s ease infinite;
+    color: white;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+}
+
+.modal-tarjetas-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: shimmer 3s infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.modal-tarjetas-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-tarjetas-header h2 i {
+    font-size: 1.6rem;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.modal-close-btn::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(0);
+    transition: transform 0.4s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(180deg) scale(1.1);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.modal-close-btn:hover::before {
+    transform: scale(1.5);
+    opacity: 0;
+}
+
+.modal-tarjetas-body {
+    padding: 24px;
+    position: relative;
+}
+
+/* Lista de Tarjetas con Animación */
+.tarjetas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+    perspective: 1000px;
+}
+
+.loading-tarjetas,
+.no-tarjetas,
+.error-tarjetas {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loading-tarjetas i,
+.no-tarjetas i,
+.error-tarjetas i {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.4;
+}
+
+.no-tarjetas small {
+    display: block;
+    margin-top: 12px;
+    color: #999;
+    font-size: 0.95rem;
+}
+
+/* Card de Tarjeta con Efectos 3D - Compacto */
+.tarjeta-card {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+    animation: slideInCard 0.6s ease forwards;
+    transform-style: preserve-3d;
+    overflow: hidden;
+}
+
+.tarjeta-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle,
+        rgba(140, 188, 0, 0.1) 0%,
+        transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+.tarjeta-card:hover {
+    border-color: #037bc0;
+    background-position: 100% 100%;
+    box-shadow: 
+        0 6px 16px rgba(3, 123, 192, 0.2),
+        0 3px 8px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(3, 123, 192, 0.1) inset;
+    transform: translateY(-3px) scale(1.01);
+}
+
+.tarjeta-card:hover::before {
+    opacity: 1;
+}
+
+.tarjeta-card.predeterminada {
+    border-color: #8cbc00;
+    border-width: 3px;
+    background: linear-gradient(135deg, #f0f8e0 0%, #ffffff 50%, #f0f8e0 100%);
+    background-size: 200% 200%;
+    animation: slideInCard 0.6s ease forwards, glow 3s ease-in-out infinite;
+}
+
+.tarjeta-card.predeterminada::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(140, 188, 0, 0.2),
+        transparent
+    );
+    animation: shimmer 2s infinite;
+}
+
+.tarjeta-card.vencida {
+    opacity: 0.5;
+    border-color: #e74c3c;
+    filter: grayscale(50%);
+    animation: slideInCard 0.6s ease forwards;
+}
+
+.tarjeta-card.vencida:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(231, 76, 60, 0.2);
+}
+
+.tarjeta-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex: 1;
+    z-index: 1;
+}
+
+.tarjeta-icono {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #a4d007 0%, #037bc0 100%);
+    background-size: 200% 200%;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    box-shadow: 
+        0 4px 12px rgba(164, 208, 7, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+    transition: all 0.3s ease;
+}
+
+.tarjeta-card:hover .tarjeta-icono {
+    transform: scale(1.05);
+    background-position: 100% 100%;
+    box-shadow: 
+        0 6px 18px rgba(3, 123, 192, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+}
+
+.tarjeta-detalles {
+    flex: 1;
+}
+
+.tarjeta-numero {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+}
+
+.tarjeta-card:hover .tarjeta-numero {
+    color: #037bc0;
+    transform: translateX(5px);
+}
+
+.tarjeta-titular {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.3s;
+}
+
+.tarjeta-card:hover .tarjeta-titular {
+    color: #333;
+}
+
+.tarjeta-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tarjeta-tipo,
+.tarjeta-expiracion,
+.tarjeta-alias {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.tarjeta-card:hover .tarjeta-tipo,
+.tarjeta-card:hover .tarjeta-expiracion,
+.tarjeta-card:hover .tarjeta-alias {
+    transform: translateY(-2px);
+}
+
+.tarjeta-tipo {
+    background: linear-gradient(135deg, #037bc0 0%, #025a8f 50%, #037bc0 100%);
+    background-size: 200% 200%;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(3, 123, 192, 0.3);
+    animation: gradientShift 3s ease infinite;
+}
+
+.badge-predeterminada {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    background: linear-gradient(90deg, #a4d007 0%, #037bc0 100%);
+    background-size: 200% 100%;
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 6px;
+    box-shadow: 0 2px 8px rgba(164, 208, 7, 0.4);
+    animation: gradientShift 3s ease infinite;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge-predeterminada i {
+    font-size: 0.75rem;
+}
+
+.badge-vencida {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 6px;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.tarjeta-acciones {
+    display: flex;
+    gap: 10px;
+    z-index: 1;
+}
+
+.btn-accion {
+    width: 38px;
+    height: 38px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    color: #666;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-accion::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(140, 188, 0, 0.2) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.4s;
+}
+
+.btn-accion:hover {
+    border-color: #037bc0;
+    color: #037bc0;
+    background: rgba(3, 123, 192, 0.05);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(3, 123, 192, 0.3);
+}
+
+.btn-accion:hover::before {
+    transform: scale(1.5);
+}
+
+.btn-accion.btn-eliminar:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    background: rgba(231, 76, 60, 0.05);
+    box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+}
+
+.btn-accion:active {
+    transform: scale(0.95);
+}
+
+/* Botón Agregar Tarjeta - Compacto */
+.btn-agregar-tarjeta {
+    position: relative;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(90deg, #a4d007 0%, #037bc0 100%);
+    background-size: 200% 100%;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(164, 208, 7, 0.3);
+}
+
+.btn-agregar-tarjeta::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-agregar-tarjeta:hover {
+    background-position: 100% 0%;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(3, 123, 192, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-agregar-tarjeta:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-agregar-tarjeta:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+.btn-agregar-tarjeta i {
+    font-size: 1.1rem;
+}
+
+/* Formulario de Nueva Tarjeta - Compacto */
+.formulario-tarjeta {
+    margin-top: 16px;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.formulario-tarjeta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #a4d007 0%, #037bc0 100%);
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+}
+
+.formulario-tarjeta h3 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.formulario-tarjeta h3::before {
+    content: '\f2c3';
+    font-family: 'bootstrap-icons';
+    color: #037bc0;
+    font-size: 1.2rem;
+}
+
+.form-group {
+    margin-bottom: 12px;
+    animation: slideInCard 0.5s ease forwards;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: #333;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.form-group label i {
+    color: #037bc0;
+    font-size: 1rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: white;
+    font-weight: 500;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #037bc0;
+    background: rgba(3, 123, 192, 0.02);
+    box-shadow: 
+        0 0 0 4px rgba(3, 123, 192, 0.1),
+        0 8px 20px rgba(3, 123, 192, 0.15);
+    transform: translateY(-2px);
+}
+
+.form-group input:hover,
+.form-group select:hover {
+    border-color: #037bc0;
+    box-shadow: 0 4px 12px rgba(3, 123, 192, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btn-cancelar,
+.btn-guardar {
+    position: relative;
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    overflow: hidden;
+}
+
+.btn-cancelar {
+    background: linear-gradient(135deg, #e0e0e0 0%, #d0d0d0 100%);
+    color: #666;
+    border: 2px solid transparent;
+}
+
+.btn-cancelar::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-cancelar:hover {
+    background: linear-gradient(135deg, #d0d0d0 0%, #c0c0c0 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.btn-cancelar:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-guardar {
+    background: linear-gradient(90deg, #a4d007 0%, #037bc0 100%);
+    background-size: 200% 100%;
+    color: white;
+    box-shadow: 0 4px 15px rgba(164, 208, 7, 0.3);
+}
+
+.btn-guardar::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-guardar:hover {
+    background-position: 100% 0%;
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(3, 123, 192, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+.btn-guardar:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-guardar:active,
+.btn-cancelar:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.btn-guardar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-guardar:disabled:hover {
+    transform: none;
+}
+
+.btn-guardar i,
+.btn-cancelar i {
+    font-size: 1.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .modal-tarjetas-content {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-tarjetas-header {
+        border-radius: 0;
+    }
+    
+    .tarjeta-card {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .tarjeta-acciones {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dark Mode - Siguiendo el patrón de dark-mode.css */
+body.dark-mode .modal-tarjetas-content {
+    background: linear-gradient(135deg, var(--bg-dark-card) 0%, var(--bg-dark) 100%);
+    color: var(--text-dark-primary);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(164, 208, 7, 0.1) inset,
+        0 10px 30px rgba(3, 123, 192, 0.2);
+}
+
+body.dark-mode .modal-tarjetas-header {
+    background: linear-gradient(90deg, #a4d007 0%, #6fb800 25%, #3da08e 50%, #037bc0 100%);
+    border-bottom: 1px solid var(--border-dark);
+}
+
+body.dark-mode .tarjeta-card {
+    background: var(--bg-dark-card);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .tarjeta-card:hover {
+    border-color: #037bc0;
+    background: rgba(3, 123, 192, 0.05);
+    box-shadow: 
+        0 6px 16px rgba(3, 123, 192, 0.3),
+        0 3px 8px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(3, 123, 192, 0.2) inset;
+}
+
+body.dark-mode .tarjeta-card.predeterminada {
+    background: var(--bg-dark-card);
+    border-color: #037bc0;
+    box-shadow: 0 0 20px rgba(3, 123, 192, 0.2);
+}
+
+body.dark-mode .tarjeta-numero {
+    color: var(--text-dark-primary);
+}
+
+body.dark-mode .tarjeta-card:hover .tarjeta-numero {
+    color: #037bc0;
+}
+
+body.dark-mode .tarjeta-titular {
+    color: var(--text-dark-secondary);
+}
+
+body.dark-mode .tarjeta-card:hover .tarjeta-titular {
+    color: var(--text-dark-primary);
+}
+
+body.dark-mode .tarjeta-expiracion,
+body.dark-mode .tarjeta-alias {
+    background: var(--bg-dark);
+    color: var(--text-dark-secondary);
+}
+
+body.dark-mode .btn-accion {
+    background: var(--bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-dark-secondary);
+}
+
+body.dark-mode .btn-accion:hover {
+    background: rgba(3, 123, 192, 0.1);
+    border-color: #037bc0;
+    color: #037bc0;
+}
+
+body.dark-mode .formulario-tarjeta {
+    background: var(--bg-dark-card);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .formulario-tarjeta h3 {
+    color: var(--text-dark-primary);
+}
+
+body.dark-mode .form-group label {
+    color: var(--text-dark-primary);
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select {
+    background: var(--bg-dark);
+    border-color: var(--border-dark);
+    color: var(--text-dark-primary);
+}
+
+body.dark-mode .form-group input:focus,
+body.dark-mode .form-group select:focus {
+    background: rgba(3, 123, 192, 0.05);
+    border-color: #037bc0;
+}
+
+body.dark-mode .form-group input::placeholder {
+    color: var(--text-dark-secondary);
+    opacity: 0.6;
+}
+
+body.dark-mode .btn-cancelar {
+    background: var(--bg-dark);
+    color: var(--text-dark-secondary);
+    border: 2px solid var(--border-dark);
+}
+
+body.dark-mode .btn-cancelar:hover {
+    background: var(--bg-dark-secondary);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .loading-tarjetas,
+body.dark-mode .no-tarjetas,
+body.dark-mode .error-tarjetas {
+    color: var(--text-dark-secondary);
+}
+
+body.dark-mode .no-tarjetas small {
+    color: var(--text-dark-secondary);
+    opacity: 0.7;
+}
+
+body.dark-mode .tarjeta-tipo {
+    background: linear-gradient(135deg, #037bc0 0%, #025a8f 50%, #037bc0 100%);
+    color: white;
+}
+
+body.dark-mode .modal-tarjetas {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+/* Animaciones Adicionales Espectaculares */
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1) rotate(180deg);
+    }
+}
+
+@keyframes cardFlip3D {
+    0% {
+        transform: perspective(1000px) rotateY(0deg);
+    }
+    50% {
+        transform: perspective(1000px) rotateY(180deg);
+    }
+    100% {
+        transform: perspective(1000px) rotateY(360deg);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) translateY(-50px);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05) translateY(10px);
+    }
+    70% {
+        transform: scale(0.9) translateY(-5px);
+    }
+    100% {
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    10%, 30% {
+        transform: scale(0.9);
+    }
+    20%, 40%, 60%, 80% {
+        transform: scale(1.1);
+    }
+    50%, 70% {
+        transform: scale(1.05);
+    }
+}
+
+/* Efectos de Partículas */
+.modal-tarjetas-content::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle, rgba(140, 188, 0, 0.1) 1px, transparent 1px),
+        radial-gradient(circle, rgba(140, 188, 0, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px;
+    background-position: 0 0, 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    animation: float 20s ease-in-out infinite;
+}
+
+/* Efecto de Brillo en Hover */
+.tarjeta-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+}
+
+.tarjeta-card:hover::after {
+    opacity: 1;
+    animation: float 3s ease-in-out infinite;
+}

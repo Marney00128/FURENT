@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías | Admin</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/admin-notifications.css">
+    <link rel="stylesheet" href="/css/custom-resenas-modal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .category-icon-preview {
+            font-size: 32px;
+            color: var(--primary-color);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .category-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .category-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+        
+        .icon-option {
+            padding: 10px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+        }
+        
+        .icon-option:hover {
+            border-color: var(--primary-color);
+            background: rgba(140, 188, 0, 0.1);
+        }
+        
+        .icon-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(140, 188, 0, 0.2);
+        }
+        
+        .icon-option i {
+            font-size: 24px;
+            color: var(--text-primary);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s ease;
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--text-primary);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger-color);
+            transform: rotate(90deg);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(140, 188, 0, 0.3);
+        }
+        
+        .btn-add-category {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-add-category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(140, 188, 0, 0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .category-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .category-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        
+        .category-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .category-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .product-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .category-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* Espacio superior para el contenido principal */
+        main.main-content > .card:first-of-type {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-house-heart"></i>
+            <h2>FURENT <span>Admin</span></h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="nav-item">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/usuarios" class="nav-item">
+                <i class="bi bi-people"></i>
+                <span>Usuarios</span>
+            </a>
+            <a href="/admin/productos" class="nav-item">
+                <i class="bi bi-box-seam"></i>
+                <span>Productos</span>
+            </a>
+            <a href="/admin/pedidos" class="nav-item">
+                <i class="bi bi-cart-check"></i>
+                <span>Pedidos</span>
+            </a>
+            <a href="/admin/categorias" class="nav-item active">
+                <i class="bi bi-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <a href="/admin/reportes" class="nav-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Registros</span>
+            </a>
+            <a href="/admin/reportes-analytics" class="nav-item">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Reportes</span>
+            </a>
+            <a href="/admin/configuracion" class="nav-item">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/" class="nav-item">
+                <i class="bi bi-house-door"></i>
+                <span>Ir al Sitio</span>
+            </a>
+            <a href="/logout" class="nav-item logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1>Gestión de Categorías</h1>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Buscar categorías..." id="searchInput" onkeyup="filtrarCategorias()">
+                </div>
+
+                <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <span th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" th:text="${session.usuarioNombre}">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alerts -->
+        <div class="alert alert-success" th:if="${mensaje}">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+
+        <div class="alert alert-error" th:if="${error}">
+            <i class="bi bi-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Categories Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="bi bi-tags"></i> Categorías de Productos</h2>
+                <button class="btn-add-category" onclick="abrirModalCrear()">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Nueva Categoría</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="categories-grid" id="categoriesGrid" th:if="${!#lists.isEmpty(categorias)}">
+                    <div class="category-card" th:each="categoria : ${categorias}">
+                        <div class="category-card-header">
+                            <i class="category-icon-preview" th:class="${categoria.icono}"></i>
+                            <div>
+                                <h3 th:text="${categoria.nombre}">Categoría</h3>
+                            </div>
+                        </div>
+                        <p th:text="${categoria.descripcion}">Descripción de la categoría</p>
+                        <div class="category-card-footer">
+                            <div class="product-count">
+                                <i class="bi bi-box-seam"></i>
+                                <span th:text="${categoria.cantidadProductos} + ' productos'">0 productos</span>
+                            </div>
+                            <div class="category-actions">
+                                <button class="btn-icon btn-success" title="Ver productos" 
+                                        th:attr="data-categoria-id=${categoria.id}"
+                                        onclick="verProductosCategoria(this.getAttribute('data-categoria-id'))">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn-icon btn-primary" title="Editar" 
+                                        th:data-id="${categoria.id}"
+                                        th:data-nombre="${categoria.nombre}"
+                                        th:data-descripcion="${categoria.descripcion}"
+                                        th:data-icono="${categoria.icono}"
+                                        onclick="abrirModalEditar(this.dataset)">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn-icon btn-danger" title="Eliminar" 
+                                        th:data-id="${categoria.id}"
+                                        th:data-nombre="${categoria.nombre}"
+                                        th:data-productos="${categoria.cantidadProductos}"
+                                        onclick="confirmarEliminar(this.dataset)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="empty-state" th:if="${#lists.isEmpty(categorias)}">
+                    <i class="bi bi-tags"></i>
+                    <h3>No hay categorías registradas</h3>
+                    <p>Crea tu primera categoría para organizar tus productos</p>
+                    <button class="btn-add-category" onclick="abrirModalCrear()" style="margin: 20px auto;">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Crear Categoría</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-top: 30px;">
+            <div class="stat-card-small">
+                <i class="bi bi-tags"></i>
+                <div>
+                    <h3 th:text="${totalCategorias}">0</h3>
+                    <p>Total Categorías</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Crear/Editar Categoría -->
+    <div id="categoriaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nueva Categoría</h2>
+                <button class="close-modal" onclick="cerrarModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <form id="categoriaForm" method="POST">
+                <div class="form-group">
+                    <label for="nombre">Nombre de la Categoría *</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required 
+                           placeholder="Ej: Sillas, Mesas, Decoración...">
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion">Descripción *</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" required 
+                              placeholder="Describe brevemente esta categoría..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Icono de la Categoría</label>
+                    <input type="hidden" id="icono" name="icono" value="bi-tag">
+                    <div class="icon-selector">
+                        <div class="icon-option" onclick="seleccionarIcono('bi-chair', this)">
+                            <i class="bi bi-chair"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-table', this)">
+                            <i class="bi bi-table"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-lamp', this)">
+                            <i class="bi bi-lamp"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-door-open', this)">
+                            <i class="bi bi-door-open"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-box', this)">
+                            <i class="bi bi-box"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-gift', this)">
+                            <i class="bi bi-gift"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-stars', this)">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <div class="icon-option selected" onclick="seleccionarIcono('bi-tag', this)">
+                            <i class="bi bi-tag"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-flower1', this)">
+                            <i class="bi bi-flower1"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-balloon', this)">
+                            <i class="bi bi-balloon"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-cup', this)">
+                            <i class="bi bi-cup"></i>
+                        </div>
+                        <div class="icon-option" onclick="seleccionarIcono('bi-basket', this)">
+                            <i class="bi bi-basket"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-check-circle"></i> Guardar Categoría
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== SCRIPTS DE CATEGORÍAS CARGADOS ===');
+        
+        // Variables globales
+        let modoEdicion = false;
+        let categoriaIdEditar = null;
+        
+        // Toggle Sidebar
+        window.toggleSidebar = function() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            if (sidebar) sidebar.classList.toggle('collapsed');
+            if (mainContent) mainContent.classList.toggle('expanded');
+        };
+
+        // Toggle Theme
+        window.toggleTheme = function() {
+            try {
+                const body = document.body;
+                const themeIcon = document.querySelector('.theme-toggle i');
+                
+                body.classList.toggle('dark-mode');
+                
+                if (body.classList.contains('dark-mode')) {
+                    themeIcon.classList.remove('bi-moon-stars');
+                    themeIcon.classList.add('bi-sun');
+                    localStorage.setItem('adminTheme', 'dark');
+                } else {
+                    themeIcon.classList.remove('bi-sun');
+                    themeIcon.classList.add('bi-moon-stars');
+                    localStorage.setItem('adminTheme', 'light');
+                }
+            } catch (error) {
+                console.error('Error en toggleTheme:', error);
+            }
+        };
+
+        // Abrir modal para crear
+        function abrirModalCrear() {
+            modoEdicion = false;
+            document.getElementById('modalTitle').textContent = 'Nueva Categoría';
+            document.getElementById('categoriaForm').action = '/admin/categorias/crear';
+            document.getElementById('nombre').value = '';
+            document.getElementById('descripcion').value = '';
+            document.getElementById('icono').value = 'bi-tag';
+            
+            // Resetear iconos
+            document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.icon-option[onclick*="bi-tag"]').classList.add('selected');
+            
+            document.getElementById('categoriaModal').classList.add('active');
+        }
+
+        // Abrir modal para editar
+        function abrirModalEditar(data) {
+            modoEdicion = true;
+            categoriaIdEditar = data.id;
+            document.getElementById('modalTitle').textContent = 'Editar Categoría';
+            document.getElementById('categoriaForm').action = '/admin/categorias/editar/' + data.id;
+            document.getElementById('nombre').value = data.nombre;
+            document.getElementById('descripcion').value = data.descripcion;
+            document.getElementById('icono').value = data.icono;
+            
+            // Seleccionar el icono actual
+            document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelector('.icon-option[onclick*="' + data.icono + '"]')?.classList.add('selected');
+            
+            document.getElementById('categoriaModal').classList.add('active');
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            document.getElementById('categoriaModal').classList.remove('active');
+        }
+
+        // Seleccionar icono
+        function seleccionarIcono(iconClass, element) {
+            document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('icono').value = iconClass;
+        }
+
+        // Filtrar categorías
+        function filtrarCategorias() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const cards = document.querySelectorAll('.category-card');
+
+            cards.forEach(card => {
+                const nombre = card.querySelector('h3').textContent.toLowerCase();
+                const descripcion = card.querySelector('p').textContent.toLowerCase();
+                
+                if (nombre.includes(filter) || descripcion.includes(filter)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Ver productos de una categoría
+        function verProductosCategoria(categoriaId) {
+            window.location.href = '/admin/categorias/' + categoriaId + '/productos';
+        }
+
+        // Confirmar eliminar
+        function confirmarEliminar(data) {
+            if (typeof Swal === 'undefined') {
+                alert('¿Eliminar categoría ' + data.nombre + '?');
+                return;
+            }
+            
+            if (parseInt(data.productos) > 0) {
+                Swal.fire({
+                    title: 'No se puede eliminar',
+                    html: `La categoría <strong>${data.nombre}</strong> tiene <strong>${data.productos} productos</strong> asociados.<br>Primero debes reasignar o eliminar esos productos.`,
+                    icon: 'warning',
+                    confirmButtonColor: '#8cbc00',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: '¿Eliminar categoría?',
+                html: `¿Estás seguro de eliminar la categoría <strong>${data.nombre}</strong>?<br><span style="color: #d33;">Esta acción no se puede deshacer.</span>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/admin/categorias/eliminar/${data.id}`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('categoriaModal');
+            if (event.target == modal) {
+                cerrarModal();
+            }
+        };
+
+        // Al cargar el DOM
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM cargado - Categorías');
+            
+            // Cargar tema guardado
+            const savedTheme = localStorage.getItem('adminTheme');
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                if (themeIcon) {
+                    themeIcon.classList.remove('bi-moon-stars');
+                    themeIcon.classList.add('bi-sun');
+                }
+            }
+
+            // Auto-hide alerts
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.transition = 'opacity 0.3s';
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+
+            // Animar cards
+            const cards = document.querySelectorAll('.category-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+        
+        console.log('=== SCRIPTS COMPLETADOS ===');
+    </script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script de notificaciones admin -->
+    <script src="/js/admin-notifications.js"></script>
+</body>
+</html>

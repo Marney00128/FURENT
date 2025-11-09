@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - FURENT Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/admin-notifications.css">
+    <link rel="stylesheet" th:href="@{/css/configuracion.css}">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/admin-sidebar :: sidebar('configuracion')}"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" onclick="toggleSidebar()">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h1>Configuración</h1>
+                </div>
+
+                <div class="topbar-right">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                        <i class="bi bi-moon-stars"></i>
+                    </button>
+
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <span th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">A</span>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name" th:text="${session.usuarioNombre}">Admin</span>
+                            <span class="user-role">Administrador</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Coming Soon Section -->
+            <div class="coming-soon-container">
+                <div class="coming-soon-card">
+                    <!-- Animated Icon -->
+                    <div class="icon-container">
+                        <div class="gear-wrapper">
+                            <i class="bi bi-gear-fill gear-icon gear-1"></i>
+                            <i class="bi bi-gear-fill gear-icon gear-2"></i>
+                            <i class="bi bi-gear-fill gear-icon gear-3"></i>
+                        </div>
+                    </div>
+
+                    <!-- Main Message -->
+                    <h2 class="main-title">
+                        <span class="title-word">Pronto</span>
+                        <span class="title-word">Nuevas</span>
+                        <span class="title-word">Implementaciones</span>
+                    </h2>
+
+                    <!-- Description -->
+                    <p class="description">
+                        Estamos trabajando en nuevas funcionalidades para mejorar tu experiencia de administración.
+                    </p>
+
+                    <!-- Feature Cards -->
+                    <div class="features-grid">
+                        <div class="feature-card" style="animation-delay: 0.1s">
+                            <div class="feature-icon">
+                                <i class="bi bi-sliders"></i>
+                            </div>
+                            <h3>Configuración Avanzada</h3>
+                            <p>Personaliza cada aspecto de tu plataforma</p>
+                        </div>
+
+                        <div class="feature-card" style="animation-delay: 0.2s">
+                            <div class="feature-icon">
+                                <i class="bi bi-bell"></i>
+                            </div>
+                            <h3>Notificaciones</h3>
+                            <p>Gestiona alertas y recordatorios</p>
+                        </div>
+
+                        <div class="feature-card" style="animation-delay: 0.3s">
+                            <div class="feature-icon">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h3>Seguridad</h3>
+                            <p>Controles de seguridad avanzados</p>
+                        </div>
+
+                        <div class="feature-card" style="animation-delay: 0.4s">
+                            <div class="feature-icon">
+                                <i class="bi bi-palette"></i>
+                            </div>
+                            <h3>Personalización</h3>
+                            <p>Temas y estilos personalizados</p>
+                        </div>
+
+                        <div class="feature-card" style="animation-delay: 0.5s">
+                            <div class="feature-icon">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <h3>Email Templates</h3>
+                            <p>Personaliza tus correos electrónicos</p>
+                        </div>
+
+                        <div class="feature-card" style="animation-delay: 0.6s">
+                            <div class="feature-icon">
+                                <i class="bi bi-cloud-upload"></i>
+                            </div>
+                            <h3>Backups</h3>
+                            <p>Respaldos automáticos de datos</p>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Desarrollo en progreso</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Particles Background -->
+                    <div class="particles">
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script de notificaciones admin -->
+    <script src="/js/admin-notifications.js"></script>
+</body>
+</html>

@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Alquiler | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/cart-preview.css}">
+    <link rel="stylesheet" th:href="@{/css/header-adjustments.css}">
+    <link rel="stylesheet" th:href="@{/css/payment-notifications.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <style>
+        /* Estilos personalizados para SweetAlert2 */
+        .swal2-confirm-custom-large {
+            background: linear-gradient(135deg, #8cbc00, #6a9600) !important;
+            color: white !important;
+            border: none !important;
+            padding: 12px 28px !important;
+            border-radius: 10px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: all 0.3s !important;
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        
+        .swal2-confirm-custom-large:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(140, 188, 0, 0.4) !important;
+            background: linear-gradient(135deg, #7aa900, #5a8500) !important;
+        }
+        
+        .swal2-cancel-custom-large {
+            background: white !important;
+            color: #dc3545 !important;
+            border: 2px solid #dc3545 !important;
+            padding: 12px 28px !important;
+            border-radius: 10px !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            cursor: pointer !important;
+            transition: all 0.3s !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+        }
+        
+        .swal2-cancel-custom-large:hover {
+            background: #dc3545 !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3) !important;
+        }
+        
+        .swal2-popup-custom {
+            border-radius: 20px !important;
+            padding: 20px !important;
+        }
+        
+        /* Separación entre botones */
+        .swal2-actions {
+            gap: 15px !important;
+            margin-top: 20px !important;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <style>
+        .cart-page { padding: 60px 0; min-height: 70vh; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); }
+        .cart-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid transparent; background: linear-gradient(90deg, #8cbc00 0%, #037bc0 100%); background-clip: padding-box; position: relative; }
+        .cart-header::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #8cbc00 0%, #037bc0 100%); }
+        .cart-header h1 { font-size: 36px; color: #2c3e50; display: flex; align-items: center; gap: 15px; animation: slideIn 0.5s ease; }
+        .cart-header h1 i { color: #8cbc00; animation: bounce 2s infinite; }
+        .cart-items-count { background: linear-gradient(135deg, #8cbc00, #037bc0); color: white; padding: 10px 25px; border-radius: 30px; font-weight: 700; box-shadow: 0 4px 10px rgba(140, 188, 0, 0.3); animation: fadeIn 0.8s ease; }
+        .cart-content { display: grid; grid-template-columns: 1fr 420px; gap: 35px; }
+        .cart-items { background: white; border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: visible; border: 1px solid rgba(0,0,0,0.05); }
+        .cart-item { display: grid; grid-template-columns: 140px 1fr auto; gap: 25px; padding: 25px; border-bottom: none; align-items: center; min-height: 180px; background: linear-gradient(135deg, #fafafa 0%, #ffffff 100%); margin-bottom: 15px; border-radius: 15px; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-left: 4px solid #8cbc00; }
+        .cart-item:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(140, 188, 0, 0.15); }
+        .cart-item:last-child { margin-bottom: 0; }
+        .cart-item-image { width: 140px; height: 140px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; }
+        .cart-item-image::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%); animation: shine 3s infinite; }
+        .cart-item-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .cart-item:hover .cart-item-image img { transform: scale(1.1); }
+        .cart-item-details { flex: 1; }
+        .cart-item-name { font-size: 20px; font-weight: 700; color: #2c3e50; margin-bottom: 12px; line-height: 1.3; }
+        .cart-item-price { font-size: 24px; color: #8cbc00; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .cart-item-price i { font-size: 20px; }
+        .cart-item-days { font-size: 15px; color: #7f8c8d; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .cart-item-days i { color: #037bc0; }
+        .cart-item-info { font-size: 14px; color: #6c757d; margin-top: 8px; display: flex; align-items: center; gap: 6px; background: #f8f9fa; padding: 8px 12px; border-radius: 8px; border-left: 3px solid #037bc0; }
+        .cart-item-info i { color: #037bc0; font-size: 16px; }
+        .cart-item-actions { display: flex; flex-direction: column; gap: 12px; align-items: flex-end; }
+        .cart-item-quantity { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #f5f7fa, #e9ecef); padding: 10px 18px; border-radius: 30px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .quantity-btn { background: white; border: 2px solid #8cbc00; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.1); font-weight: 700; color: #8cbc00; }
+        .quantity-btn:hover { background: #8cbc00; color: white; transform: scale(1.15) rotate(15deg); box-shadow: 0 5px 12px rgba(140, 188, 0, 0.3); }
+        .quantity-value { font-weight: 800; min-width: 35px; text-align: center; color: #2c3e50; font-size: 18px; }
+        .days-input { width: 80px; padding: 5px 10px; border: 2px solid #8cbc00; border-radius: 8px; text-align: center; font-weight: 700; background: white; transition: all 0.3s; }
+        .days-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.2); transform: scale(1.05); }
+        .remove-btn { background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; font-weight: 700; box-shadow: 0 4px 10px rgba(255, 68, 68, 0.3); }
+        .remove-btn:hover { background: linear-gradient(135deg, #cc0000, #990000); transform: translateY(-3px); box-shadow: 0 6px 15px rgba(255, 68, 68, 0.4); }
+        .cart-summary { background: white; border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); height: fit-content; position: sticky; top: 20px; border: 1px solid rgba(0,0,0,0.05); }
+        .cart-summary h2 { font-size: 28px; margin-bottom: 30px; color: #2c3e50; display: flex; align-items: center; gap: 12px; }
+        .cart-summary h2 i { color: #8cbc00; }
+        .summary-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid #e9ecef; font-size: 16px; transition: all 0.3s; }
+        .summary-row:hover { background: #f8f9fa; margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 8px; }
+        .summary-row:last-of-type { border-bottom: 3px solid #8cbc00; padding-bottom: 22px; margin-bottom: 22px; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 28px; font-weight: 800; color: #2c3e50; padding: 22px 0; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); margin: 0 -20px; padding-left: 20px; padding-right: 20px; border-radius: 10px; }
+        .summary-total .amount { color: #8cbc00; text-shadow: 0 2px 4px rgba(140, 188, 0, 0.2); }
+        .checkout-btn { width: 100%; background: linear-gradient(135deg, #8cbc00, #037bc0); color: white; border: none; padding: 20px; border-radius: 15px; font-size: 20px; font-weight: 800; cursor: pointer; transition: all 0.3s; margin-bottom: 18px; box-shadow: 0 6px 20px rgba(140, 188, 0, 0.3); display: flex; align-items: center; justify-content: center; gap: 12px; }
+        .checkout-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(140, 188, 0, 0.4); background: linear-gradient(135deg, #7aa900, #026a9c); }
+        .checkout-btn i { font-size: 24px; }
+        .continue-shopping { width: 100%; background: white; color: #8cbc00; border: 3px solid #8cbc00; padding: 16px; border-radius: 15px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .continue-shopping:hover { background: #8cbc00; color: white; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(140, 188, 0, 0.3); }
+        .continue-shopping i { font-size: 18px; }
+        .empty-cart { text-align: center; padding: 100px 40px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .empty-cart i { font-size: 140px; color: #e9ecef; margin-bottom: 40px; animation: float 3s ease-in-out infinite; }
+        .empty-cart h2 { font-size: 36px; color: #2c3e50; margin-bottom: 20px; }
+        .empty-cart p { font-size: 20px; color: #7f8c8d; margin-bottom: 40px; }
+        .clear-cart-btn { background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: none; padding: 14px 35px; border-radius: 30px; cursor: pointer; transition: all 0.3s; font-weight: 700; margin-top: 25px; box-shadow: 0 4px 15px rgba(255, 68, 68, 0.3); }
+        .clear-cart-btn:hover { background: linear-gradient(135deg, #cc0000, #990000); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4); }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes shine { 0% { transform: translateX(-100%) translateY(-100%) rotate(30deg); } 100% { transform: translateX(100%) translateY(100%) rotate(30deg); } }
+        
+        /* SweetAlert Custom Buttons */
+        .swal2-confirm-custom {
+            padding: 14px 35px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3) !important;
+            transition: all 0.3s !important;
+        }
+        .swal2-confirm-custom:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(140, 188, 0, 0.4) !important;
+        }
+        .swal2-cancel-custom {
+            padding: 14px 35px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            transition: all 0.3s !important;
+        }
+        .swal2-cancel-custom:hover {
+            transform: translateY(-2px) !important;
+        }
+        
+        @media (max-width: 968px) {
+            .cart-content { grid-template-columns: 1fr; }
+            .cart-summary { position: static; }
+            .cart-item { grid-template-columns: 120px 1fr; gap: 18px; }
+            .cart-item-actions { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div class="contact-info">
+                <span><i class="bi bi-telephone"></i> +57 300 123 4567</span>
+                <span><i class="bi bi-envelope"></i> info@furniturerent.com</span>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-instagram"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+                <a href="#"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo" aria-label="Ir al inicio">
+                <i class="bi bi-house-heart"></i>
+                <span>FU<strong>RENT</strong></span>
+            </a>
+
+            <nav class="nav-principal">
+                <a href="/">Inicio</a>
+                <a href="/about">Nosotros</a>
+                <a href="/store">Alquilar</a>
+                <a href="/contact">Contacto</a>
+                <a th:if="${session.usuario}" href="/alquiler/mis-alquileres">
+                    <i class="bi bi-calendar-check"></i> Mis alquileres
+                </a>
+                <a th:if="${session.usuario}" href="/favoritos">
+                    <i class="bi bi-heart-fill"></i> Favoritos
+                </a>
+            </nav>
+            
+            <!-- Menú de usuario logueado -->
+            <div class="user-menu" th:if="${session.usuario}">
+                <div class="user-menu-toggle">
+                    <div class="user-avatar" th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">U</div>
+                    <span th:text="${session.usuarioNombre}">Usuario</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <strong th:text="${session.usuarioNombre}">Usuario</strong>
+                        <p th:text="${session.usuario.correo}">email@example.com</p>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="/user-account">
+                            <i class="bi bi-person"></i> Mi cuenta
+                        </a>
+                        <a href="/alquiler/mis-alquileres">
+                            <i class="bi bi-calendar-check"></i> Mis alquileres
+                        </a>
+                        <a href="/direcciones">
+                            <i class="bi bi-geo-alt"></i> Mis direcciones
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/logout" class="logout-link">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón de notificaciones de pago (campanita) -->
+            <button class="payment-bell-btn" id="paymentBellBtn" th:if="${session.usuario}" aria-label="Notificaciones de pago" title="Notificaciones de pago">
+                <i class="bi bi-bell-fill"></i>
+                <span class="payment-notification-badge" id="paymentNotificationBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón del carrito -->
+            <button class="cart-btn-header" onclick="toggleCart()" aria-label="Ver carrito" title="Ver carrito de compras">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle-btn" aria-label="Cambiar tema" title="Cambiar entre modo claro y oscuro">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            
+            <!-- Botón de login si no hay sesión -->
+            <a th:unless="${session.usuario}" href="/login" class="login-btn">
+                <i class="bi bi-person-circle"></i> Iniciar sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-overlay"></div>
+        <div class="container">
+            <h1 class="page-title">Carrito de alquiler</h1>
+            <p class="page-breadcrumb"><a href="/">Inicio</a> / Carrito</p>
+        </div>
+    </section>
+
+    <!-- Cart Page -->
+    <main class="cart-page">
+        <div class="cart-container">
+            <div class="cart-header">
+                <h1><i class="bi bi-cart-check"></i> Mi carrito</h1>
+                <span class="cart-items-count" th:text="${cantidadItems} + ' producto' + (${cantidadItems} != 1 ? 's' : '')">0 productos</span>
+            </div>
+
+            <!-- Empty Cart -->
+            <div class="empty-cart" th:if="${carrito == null || carrito.isEmpty()}">
+                <i class="bi bi-cart-x"></i>
+                <h2>Tu carrito está vacío</h2>
+                <p>¡Agrega mobiliario para comenzar a alquilar!</p>
+                <a href="/store" class="checkout-btn" style="max-width: 300px; margin: 0 auto;">Explorar catálogo</a>
+            </div>
+
+            <!-- Cart Content -->
+            <div class="cart-content" th:if="${carrito != null && !carrito.isEmpty()}">
+                <!-- Cart Items -->
+                <div class="cart-items">
+                    <!-- DEBUG: Total items = [[${carrito.size()}]] -->
+                    <div class="cart-item" th:each="item : ${carrito}">
+                        <div class="cart-item-image">
+                            <img th:src="${item.imagenProducto}" th:alt="${item.nombreProducto}">
+                        </div>
+                        <div class="cart-item-details">
+                            <div class="cart-item-name" th:text="${item.nombreProducto}">Producto</div>
+                            <div class="cart-item-price"><i class="bi bi-cash"></i> Precio: <span th:text="'$' + ${#numbers.formatDecimal(item.precioProducto, 1, 'POINT', 2, 'COMMA')}">$0,00</span> / día</div>
+                            <div class="cart-item-info">
+                                <i class="bi bi-info-circle"></i>
+                                <span>El precio final se calculará según las fechas de alquiler</span>
+                            </div>
+                        </div>
+                        <div class="cart-item-actions">
+                            <div class="cart-item-quantity">
+                                <button class="quantity-btn" 
+                                        th:data-producto-id="${item.productoId}"
+                                        onclick="cambiarCantidad(this, -1)">
+                                    <i class="bi bi-dash"></i>
+                                </button>
+                                <span class="quantity-value" th:text="${item.cantidad}">1</span>
+                                <button class="quantity-btn"
+                                        th:data-producto-id="${item.productoId}"
+                                        onclick="cambiarCantidad(this, 1)">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            </div>
+                            <button class="remove-btn"
+                                    th:data-producto-id="${item.productoId}"
+                                    onclick="eliminarDelCarrito(this)">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cart Summary -->
+                <div class="cart-summary">
+                    <h2>Resumen del alquiler</h2>
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span th:text="'$' + ${#numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">$0,00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Productos:</span>
+                        <span th:text="${cantidadItems}">0</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total:</span>
+                        <span class="amount" th:text="'$' + ${#numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">$0,00</span>
+                    </div>
+                    <button class="checkout-btn" onclick="mostrarFormularioAlquiler()">Proceder al alquiler</button>
+                    <a href="/store" class="continue-shopping">Seguir comprando</a>
+                    <button class="clear-cart-btn" onclick="vaciarCarrito()">Vaciar carrito</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="grid-footer container">
+            <div>
+                <h3>Categorías</h3>
+                <nav class="footer-menu">
+                    <a href="#">Eventos</a>
+                    <a href="#">Fiestas infantiles</a>
+                    <a href="#">Quinceañeros</a>        
+                </nav>
+            </div>
+            <div>
+                <h3>Sobre nosotros</h3>
+                <nav class="footer-menu">
+                    <a href="#">Nuestra historia</a>
+                    <a href="#">Misión, visión y valores</a>
+                    <a href="#">Política de privacidad</a>
+                </nav>
+            </div>
+            <div>
+                <h3>Soportes</h3>
+                <nav class="footer-menu">
+                    <a href="#">Preguntas frecuentes</a>
+                    <a href="#">Ayuda en línea</a>
+                    <a href="#">Confianza y seguridad</a>
+                </nav>
+            </div>
+        </div>
+        <p class="copyright">Todos los derechos reservados - FURENT</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function actualizarCantidad(productoId, cantidad) {
+            if (cantidad < 1) {
+                eliminarProducto(productoId);
+                return;
+            }
+            fetch('/carrito/actualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productoId=${productoId}&cantidad=${cantidad}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            });
+        }
+
+        function actualizarDias(input) {
+            const productoId = input.dataset.productoId;
+            const dias = parseInt(input.value);
+            if (dias < 1) { input.value = 1; return; }
+            fetch('/carrito/actualizar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `productoId=${productoId}&diasAlquiler=${dias}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            });
+        }
+
+        function eliminarProducto(productoId) {
+            Swal.fire({
+                title: '¿Eliminar producto?',
+                text: '¿Deseas eliminar este producto del carrito?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4444',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/carrito/eliminar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `productoId=${productoId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'Eliminado', text: data.message, timer: 1500, showConfirmButton: false })
+                            .then(() => location.reload());
+                        }
+                    });
+                }
+            });
+        }
+
+        // Cambiar cantidad de productos
+        function cambiarCantidad(button, cambio) {
+            const productoId = button.getAttribute('data-producto-id');
+            const quantityElement = button.parentElement.querySelector('.quantity-value');
+            const cantidadActual = parseInt(quantityElement.textContent);
+            const nuevaCantidad = cantidadActual + cambio;
+
+            if (nuevaCantidad < 1) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Cantidad mínima',
+                    text: 'La cantidad mínima es 1',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end'
+                });
+                return;
+            }
+
+            fetch(`/carrito/actualizar?productoId=${productoId}&cantidad=${nuevaCantidad}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo actualizar la cantidad',
+                        confirmButtonColor: '#8cbc00'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al actualizar la cantidad',
+                    confirmButtonColor: '#8cbc00'
+                });
+            });
+        }
+
+
+        // Eliminar producto del carrito
+        function eliminarDelCarrito(button) {
+            const productoId = button.getAttribute('data-producto-id');
+
+            Swal.fire({
+                title: '¿Eliminar producto?',
+                text: '¿Estás seguro de eliminar este producto del carrito?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4444',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/carrito/eliminar?productoId=${productoId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'No se pudo eliminar el producto',
+                                confirmButtonColor: '#8cbc00'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Ocurrió un error al eliminar el producto',
+                            confirmButtonColor: '#8cbc00'
+                        });
+                    });
+                }
+            });
+        }
+
+        function vaciarCarrito() {
+            Swal.fire({
+                title: '¿Vaciar carrito?',
+                text: '¿Estás seguro de eliminar todos los productos?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff4444',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, vaciar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/carrito/vaciar', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({ icon: 'success', title: 'Carrito vaciado', text: data.message, timer: 1500, showConfirmButton: false })
+                            .then(() => location.reload());
+                        }
+                    });
+                }
+            });
+        }
+
+        async function mostrarFormularioAlquiler() {
+            // Cargar direcciones guardadas del usuario
+            let direcciones = [];
+            try {
+                const response = await fetch('/direcciones/api/listar');
+                const data = await response.json();
+                if (data.success && data.direcciones) {
+                    direcciones = data.direcciones;
+                }
+            } catch (error) {
+                console.error('Error al cargar direcciones:', error);
+            }
+
+            // Construir el HTML del selector de direcciones
+            let direccionHTML = '';
+            if (direcciones.length > 0) {
+                direccionHTML = `
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dirección de Entrega:</label>
+                    <select id="direccionSelect" class="swal2-input" style="width: 90%; margin: 0 0 10px 0;">
+                        <option value="">-- Selecciona una dirección --</option>
+                        ${direcciones.map(dir => {
+                            const esPrincipal = dir.esPrincipal ? ' ⭐' : '';
+                            return `<option value="${dir.id}" ${dir.esPrincipal ? 'selected' : ''}>
+                                ${dir.nombreDireccion}${esPrincipal} - ${dir.direccionCompleta}
+                            </option>`;
+                        }).join('')}
+                        <option value="nueva">➕ Agregar nueva dirección...</option>
+                    </select>
+                    <div id="direccionManualDiv" style="display: none;">
+                        <input id="direccionManual" class="swal2-input" placeholder="Ingresa tu dirección" style="width: 90%; margin: 10px 0 15px 0;">
+                    </div>
+                `;
+            } else {
+                direccionHTML = `
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Dirección de Entrega:</label>
+                    <p style="color: #7f8c8d; font-size: 14px; margin-bottom: 10px;">
+                        No tienes direcciones guardadas. 
+                        <a href="/direcciones" target="_blank" style="color: #8cbc00; font-weight: 600;">Agregar una dirección</a>
+                    </p>
+                    <input id="direccionManual" class="swal2-input" placeholder="O ingresa tu dirección aquí" style="width: 90%; margin: 0 0 15px 0;">
+                `;
+            }
+
+            Swal.fire({
+                title: '<i class="bi bi-check-circle" style="color: #8cbc00; margin-right: 10px;"></i>Finalizar Alquiler',
+                html: `
+                    <style>
+                        .swal2-popup { border-radius: 20px !important; padding: 25px !important; }
+                        .form-section { margin-bottom: 25px; }
+                        .form-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 700; color: #2c3e50; font-size: 15px; }
+                        .form-label i { color: #8cbc00; font-size: 18px; }
+                        .form-input { width: 100% !important; padding: 14px !important; border: 2px solid #e9ecef !important; border-radius: 12px !important; font-size: 15px !important; transition: all 0.3s !important; margin: 0 0 8px 0 !important; }
+                        .form-input:focus { border-color: #8cbc00 !important; box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1) !important; transform: translateY(-2px); }
+                        .form-select { width: 100% !important; padding: 14px !important; border: 2px solid #e9ecef !important; border-radius: 12px !important; font-size: 15px !important; background: white !important; cursor: pointer !important; transition: all 0.3s !important; }
+                        .form-select:focus { border-color: #8cbc00 !important; box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1) !important; }
+                        .form-textarea { width: 100% !important; padding: 14px !important; border: 2px solid #e9ecef !important; border-radius: 12px !important; font-size: 15px !important; resize: vertical !important; min-height: 100px !important; transition: all 0.3s !important; font-family: 'Poppins', sans-serif !important; }
+                        .form-textarea:focus { border-color: #8cbc00 !important; box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1) !important; }
+                        .helper-text { font-size: 13px; color: #7f8c8d; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+                        .helper-text i { font-size: 12px; }
+                    </style>
+                    <div style="text-align: left; padding: 10px;">
+                        <div class="form-section">
+                            ${direccionHTML.replace('<label', '<div class="form-label"><i class="bi bi-geo-alt-fill"></i><span').replace('</label>', '</span></div>').replace('class="swal2-input"', 'class="form-input"').replace('<select', '<select class="form-select"').replace('id="direccionManual" class="swal2-input"', 'id="direccionManual" class="form-input"')}
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-label"><i class="bi bi-calendar-event"></i><span>Fecha de Inicio</span></div>
+                            <input id="fechaInicio" type="datetime-local" class="form-input">
+                            <div class="helper-text"><i class="bi bi-info-circle"></i> Selecciona cuándo necesitas el mobiliario</div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-label"><i class="bi bi-calendar-check"></i><span>Fecha de Fin</span></div>
+                            <input id="fechaFin" type="datetime-local" class="form-input">
+                            <div class="helper-text"><i class="bi bi-info-circle"></i> Selecciona cuándo termina el alquiler</div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-label"><i class="bi bi-card-text"></i><span>Notas Adicionales</span> <span style="color: #7f8c8d; font-weight: 400; font-size: 13px;">(Opcional)</span></div>
+                            <textarea id="notas" class="form-textarea" placeholder="Ej: Horario de entrega preferido, instrucciones especiales..."></textarea>
+                        </div>
+                    </div>
+                `,
+                width: '650px',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-check-lg"></i> Confirmar Alquiler',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Cancelar',
+                confirmButtonColor: '#8cbc00',
+                cancelButtonColor: '#6c757d',
+                buttonsStyling: true,
+                customClass: {
+                    confirmButton: 'swal2-confirm-custom',
+                    cancelButton: 'swal2-cancel-custom'
+                },
+                didOpen: () => {
+                    // Configurar el evento para mostrar/ocultar el input manual
+                    const selectElement = document.getElementById('direccionSelect');
+                    if (selectElement) {
+                        selectElement.addEventListener('change', function() {
+                            const manualDiv = document.getElementById('direccionManualDiv');
+                            if (this.value === 'nueva') {
+                                manualDiv.style.display = 'block';
+                            } else {
+                                manualDiv.style.display = 'none';
+                            }
+                        });
+                    }
+                    
+                    // Establecer fecha mínima como ahora
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                    
+                    const fechaInicioInput = document.getElementById('fechaInicio');
+                    const fechaFinInput = document.getElementById('fechaFin');
+                    
+                    fechaInicioInput.min = minDateTime;
+                    fechaFinInput.min = minDateTime;
+                    
+                    // Actualizar fecha mínima de fin cuando cambia la fecha de inicio
+                    fechaInicioInput.addEventListener('change', function() {
+                        const inicioSeleccionado = new Date(this.value);
+                        // Agregar 1 día a la fecha de inicio para la fecha mínima de fin
+                        inicioSeleccionado.setDate(inicioSeleccionado.getDate() + 1);
+                        
+                        const yearFin = inicioSeleccionado.getFullYear();
+                        const monthFin = String(inicioSeleccionado.getMonth() + 1).padStart(2, '0');
+                        const dayFin = String(inicioSeleccionado.getDate()).padStart(2, '0');
+                        const hoursFin = String(inicioSeleccionado.getHours()).padStart(2, '0');
+                        const minutesFin = String(inicioSeleccionado.getMinutes()).padStart(2, '0');
+                        
+                        fechaFinInput.min = `${yearFin}-${monthFin}-${dayFin}T${hoursFin}:${minutesFin}`;
+                    });
+                },
+                preConfirm: () => {
+                    let direccionFinal = '';
+                    const selectElement = document.getElementById('direccionSelect');
+                    
+                    if (selectElement) {
+                        const selectedValue = selectElement.value;
+                        if (selectedValue === 'nueva') {
+                            direccionFinal = document.getElementById('direccionManual').value;
+                        } else if (selectedValue) {
+                            // Buscar la dirección completa en el array
+                            const direccionObj = direcciones.find(d => d.id === selectedValue);
+                            if (direccionObj) {
+                                direccionFinal = `${direccionObj.direccionCompleta}, ${direccionObj.ciudad}, ${direccionObj.departamento}`;
+                            }
+                        }
+                    } else {
+                        direccionFinal = document.getElementById('direccionManual').value;
+                    }
+
+                    const fechaInicio = document.getElementById('fechaInicio').value;
+                    const fechaFin = document.getElementById('fechaFin').value;
+                    
+                    if (!direccionFinal || !fechaInicio || !fechaFin) {
+                        Swal.showValidationMessage('Por favor completa todos los campos obligatorios');
+                        return false;
+                    }
+                    
+                    // Validar que la fecha de inicio sea anterior a la fecha de fin
+                    const inicio = new Date(fechaInicio);
+                    const fin = new Date(fechaFin);
+                    
+                    if (inicio >= fin) {
+                        Swal.showValidationMessage('La fecha de inicio debe ser anterior a la fecha de fin');
+                        return false;
+                    }
+                    
+                    // Calcular días de diferencia (mínimo 1 día)
+                    const diffTime = Math.abs(fin - inicio);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays < 1) {
+                        Swal.showValidationMessage('El alquiler debe ser de al menos 1 día');
+                        return false;
+                    }
+                    
+                    return {
+                        direccion: direccionFinal,
+                        fechaInicio: fechaInicio,
+                        fechaFin: fechaFin,
+                        diasAlquiler: diffDays,
+                        notas: document.getElementById('notas').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar confirmación final con animación hermosa
+                    mostrarConfirmacionFinal(result.value);
+                }
+            });
+        }
+
+        // Función para mostrar la confirmación final del alquiler
+        function mostrarConfirmacionFinal(datosAlquiler) {
+            const isDark = document.body.classList.contains('dark-mode');
+            
+            // Formatear fechas para mostrar
+            const fechaInicioObj = new Date(datosAlquiler.fechaInicio);
+            const fechaFinObj = new Date(datosAlquiler.fechaFin);
+            const opcionesFecha = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const fechaInicioFormateada = fechaInicioObj.toLocaleDateString('es-ES', opcionesFecha);
+            const fechaFinFormateada = fechaFinObj.toLocaleDateString('es-ES', opcionesFecha);
+            
+            // Calcular precio total del carrito usando la variable global
+            const totalCarrito = typeof TOTAL_CARRITO_GLOBAL !== 'undefined' ? TOTAL_CARRITO_GLOBAL : 0;
+            const precioFinal = totalCarrito * datosAlquiler.diasAlquiler;
+            
+            console.log('=== CÁLCULO DE PRECIO ===');
+            console.log('Total carrito (precio base):', totalCarrito);
+            console.log('Días alquiler:', datosAlquiler.diasAlquiler);
+            console.log('Precio final calculado:', precioFinal);
+            console.log('========================');
+            
+            const precioFormateado = new Intl.NumberFormat('es-CO', { 
+                style: 'currency', 
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(precioFinal);
+            
+            Swal.fire({
+                title: '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="bi bi-check-circle-fill" style="color: #8cbc00; font-size: 36px; animation: bounceIn 0.6s;"></i><span style="font-size: 22px; font-weight: 800;">¿Confirmar Alquiler?</span></div>',
+                html: `
+                    <style>
+                        @keyframes bounceIn {
+                            0% { transform: scale(0); opacity: 0; }
+                            50% { transform: scale(1.2); }
+                            100% { transform: scale(1); opacity: 1; }
+                        }
+                        @keyframes slideInUp {
+                            from { transform: translateY(30px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                        @keyframes pulse {
+                            0%, 100% { transform: scale(1); }
+                            50% { transform: scale(1.05); }
+                        }
+                        .resumen-alquiler {
+                            background: ${isDark ? 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)' : 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'};
+                            border-radius: 15px;
+                            padding: 15px;
+                            margin: 15px 0;
+                            text-align: left;
+                            animation: slideInUp 0.5s ease;
+                            border: 2px solid #8cbc00;
+                            box-shadow: 0 6px 20px rgba(140, 188, 0, 0.15);
+                        }
+                        .resumen-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 10px;
+                            padding: 10px;
+                            background: ${isDark ? '#1e2130' : 'white'};
+                            border-radius: 10px;
+                            transition: all 0.3s;
+                        }
+                        .resumen-item:hover {
+                            transform: translateX(5px);
+                            box-shadow: 0 4px 12px ${isDark ? 'rgba(140, 188, 0, 0.2)' : 'rgba(0,0,0,0.1)'};
+                        }
+                        .resumen-item i {
+                            font-size: 20px;
+                            color: #8cbc00;
+                            min-width: 24px;
+                        }
+                        .resumen-item-content {
+                            flex: 1;
+                        }
+                        .resumen-label {
+                            font-size: 11px;
+                            color: ${isDark ? '#a0aec0' : '#6c757d'};
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+                        .resumen-value {
+                            font-size: 14px;
+                            color: ${isDark ? '#e8eaed' : '#2c3e50'};
+                            font-weight: 700;
+                            margin-top: 3px;
+                        }
+                        .resumen-destacado {
+                            background: linear-gradient(135deg, #8cbc00, #6a9600);
+                            color: white !important;
+                            padding: 12px;
+                            border-radius: 12px;
+                            text-align: center;
+                            margin-top: 10px;
+                            animation: pulse 2s infinite;
+                        }
+                        .resumen-destacado .resumen-label {
+                            color: rgba(255,255,255,0.9);
+                            font-size: 11px;
+                        }
+                        .resumen-destacado .resumen-value {
+                            color: white;
+                            font-size: 24px;
+                            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        }
+                        .resumen-precio-final {
+                            background: ${isDark ? 'linear-gradient(135deg, #037bc0, #025a8f)' : 'linear-gradient(135deg, #037bc0, #0288d1)'};
+                            color: white !important;
+                            padding: 12px;
+                            border-radius: 12px;
+                            text-align: center;
+                            margin-top: 10px;
+                            border: 2px solid ${isDark ? '#0288d1' : '#037bc0'};
+                        }
+                        .resumen-precio-final .resumen-label {
+                            color: rgba(255,255,255,0.9);
+                            font-size: 11px;
+                        }
+                        .resumen-precio-final .resumen-value {
+                            color: white;
+                            font-size: 28px;
+                            font-weight: 900;
+                            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                        }
+                        
+                        /* Switch Toggle para Transporte */
+                        .switch-transporte {
+                            position: relative;
+                            display: inline-block;
+                            width: 52px;
+                            height: 28px;
+                        }
+                        .switch-transporte input {
+                            opacity: 0;
+                            width: 0;
+                            height: 0;
+                        }
+                        .slider-transporte {
+                            position: absolute;
+                            cursor: pointer;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background-color: ${isDark ? '#4a5568' : '#ccc'};
+                            transition: 0.4s;
+                            border-radius: 28px;
+                        }
+                        .slider-transporte:before {
+                            position: absolute;
+                            content: "";
+                            height: 20px;
+                            width: 20px;
+                            left: 4px;
+                            bottom: 4px;
+                            background-color: white;
+                            transition: 0.4s;
+                            border-radius: 50%;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                        }
+                        input:checked + .slider-transporte {
+                            background-color: #8cbc00;
+                        }
+                        input:checked + .slider-transporte:before {
+                            transform: translateX(24px);
+                        }
+                        .slider-transporte:hover {
+                            box-shadow: 0 0 8px rgba(140, 188, 0, 0.4);
+                        }
+                    </style>
+                    <div class="resumen-alquiler">
+                        <div class="resumen-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <div class="resumen-item-content">
+                                <div class="resumen-label">Dirección de Entrega</div>
+                                <div class="resumen-value">${datosAlquiler.direccion}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="resumen-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <div class="resumen-item-content">
+                                <div class="resumen-label">Fecha de Inicio</div>
+                                <div class="resumen-value">${fechaInicioFormateada}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="resumen-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <div class="resumen-item-content">
+                                <div class="resumen-label">Fecha de Fin</div>
+                                <div class="resumen-value">${fechaFinFormateada}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="resumen-destacado">
+                            <div class="resumen-label">Duración del Alquiler</div>
+                            <div class="resumen-value">
+                                <i class="bi bi-clock-history"></i> ${datosAlquiler.diasAlquiler} ${datosAlquiler.diasAlquiler === 1 ? 'día' : 'días'}
+                            </div>
+                        </div>
+                        
+                        <div class="resumen-precio-final">
+                            <div class="resumen-label">💰 Precio Total del Alquiler</div>
+                            <div class="resumen-value">
+                                ${precioFormateado}
+                            </div>
+                        </div>
+                        
+                        <!-- Opción de Transporte -->
+                        <div style="margin-top: 20px; padding: 15px; background: ${isDark ? 'rgba(140, 188, 0, 0.1)' : 'rgba(140, 188, 0, 0.08)'}; border-radius: 12px; border: 2px solid ${isDark ? 'rgba(140, 188, 0, 0.3)' : 'rgba(140, 188, 0, 0.2)'};">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <i class="bi bi-truck" style="font-size: 24px; color: #8cbc00;"></i>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 14px; color: ${isDark ? '#e8eaed' : '#2c3e50'};">¿Deseas transporte?</div>
+                                        <div style="font-size: 11px; color: ${isDark ? '#a0aec0' : '#6c757d'};">Proporcionado por la empresa</div>
+                                    </div>
+                                </div>
+                                <label class="switch-transporte">
+                                    <input type="checkbox" id="requiereTransporte">
+                                    <span class="slider-transporte"></span>
+                                </label>
+                            </div>
+                            <div id="infoTransporte" style="display: none; margin-top: 10px; padding: 10px; background: ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.08)'}; border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <p style="margin: 0; font-size: 12px; color: ${isDark ? '#ffc107' : '#856404'}; display: flex; align-items: center; gap: 6px;">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <span>Podrás negociar el costo del transporte después de confirmar el alquiler</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="color: ${isDark ? '#a0aec0' : '#7f8c8d'}; font-size: 12px; margin-top: 10px; margin-bottom: 5px;">
+                        <i class="bi bi-info-circle"></i> Al confirmar, se procesará tu alquiler y recibirás una confirmación.
+                    </p>
+                `,
+                width: '550px',
+                showCancelButton: true,
+                confirmButtonText: '<i class="bi bi-check-lg"></i> Sí, Confirmar Alquiler',
+                cancelButtonText: '<i class="bi bi-x-lg"></i> Cancelar',
+                confirmButtonColor: '#8cbc00',
+                cancelButtonColor: '#dc3545',
+                reverseButtons: true,
+                background: isDark ? '#1e2130' : '#ffffff',
+                color: isDark ? '#e8eaed' : '#2c3e50',
+                showClass: {
+                    popup: 'animate__animated animate__zoomIn animate__faster'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__zoomOut animate__faster'
+                },
+                customClass: {
+                    confirmButton: 'swal2-confirm-custom-large',
+                    cancelButton: 'swal2-cancel-custom-large',
+                    popup: 'swal2-popup-custom'
+                },
+                buttonsStyling: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    // Manejar el toggle de transporte
+                    const checkbox = document.getElementById('requiereTransporte');
+                    const infoTransporte = document.getElementById('infoTransporte');
+                    
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            infoTransporte.style.display = 'block';
+                            infoTransporte.style.animation = 'slideInUp 0.3s ease';
+                        } else {
+                            infoTransporte.style.display = 'none';
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Obtener si requiere transporte
+                    const requiereTransporte = document.getElementById('requiereTransporte').checked;
+                    
+                    // Mostrar segundo SweetAlert para pago contra entrega
+                    Swal.fire({
+                        title: '<div style="display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="bi bi-cash-coin" style="color: #28a745; font-size: 36px;"></i><span style="font-size: 20px; font-weight: 700;">Método de Pago</span></div>',
+                        html: `
+                            <style>
+                                .pago-checkbox-container {
+                                    background: ${isDark ? 'rgba(40, 167, 69, 0.1)' : 'rgba(40, 167, 69, 0.08)'};
+                                    border-radius: 12px;
+                                    padding: 20px;
+                                    margin: 20px 0;
+                                    border: 2px solid ${isDark ? 'rgba(40, 167, 69, 0.3)' : 'rgba(40, 167, 69, 0.2)'};
+                                }
+                                .pago-checkbox-wrapper {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                    cursor: pointer;
+                                    padding: 12px;
+                                    border-radius: 8px;
+                                    transition: all 0.3s;
+                                }
+                                .pago-checkbox-wrapper:hover {
+                                    background: ${isDark ? 'rgba(40, 167, 69, 0.15)' : 'rgba(40, 167, 69, 0.12)'};
+                                }
+                                .pago-checkbox-custom {
+                                    width: 24px;
+                                    height: 24px;
+                                    cursor: pointer;
+                                    accent-color: #28a745;
+                                }
+                                .pago-checkbox-label {
+                                    flex: 1;
+                                    text-align: left;
+                                }
+                                .pago-checkbox-title {
+                                    font-size: 16px;
+                                    font-weight: 700;
+                                    color: ${isDark ? '#e8eaed' : '#2c3e50'};
+                                    margin-bottom: 4px;
+                                }
+                                .pago-checkbox-desc {
+                                    font-size: 13px;
+                                    color: ${isDark ? '#a0aec0' : '#6c757d'};
+                                    line-height: 1.4;
+                                }
+                                .pago-info-box {
+                                    background: ${isDark ? 'rgba(255, 193, 7, 0.1)' : 'rgba(255, 193, 7, 0.08)'};
+                                    border-left: 4px solid #ffc107;
+                                    border-radius: 8px;
+                                    padding: 12px;
+                                    margin-top: 15px;
+                                    text-align: left;
+                                }
+                                .pago-info-box p {
+                                    margin: 0;
+                                    font-size: 12px;
+                                    color: ${isDark ? '#ffc107' : '#856404'};
+                                    display: flex;
+                                    align-items: flex-start;
+                                    gap: 8px;
+                                }
+                                .pago-info-box i {
+                                    margin-top: 2px;
+                                    flex-shrink: 0;
+                                }
+                            </style>
+                            <div class="pago-checkbox-container">
+                                <label class="pago-checkbox-wrapper" for="pagoContraEntrega">
+                                    <input type="checkbox" id="pagoContraEntrega" class="pago-checkbox-custom">
+                                    <div class="pago-checkbox-label">
+                                        <div class="pago-checkbox-title">
+                                            <i class="bi bi-cash-stack"></i> Pagar contra entrega
+                                        </div>
+                                        <div class="pago-checkbox-desc">
+                                            Realiza el pago cuando recibas los productos
+                                        </div>
+                                    </div>
+                                </label>
+                                <div class="pago-info-box">
+                                    <p>
+                                        <i class="bi bi-info-circle-fill"></i>
+                                        <span>Si no seleccionas esta opción, deberás realizar el pago del 50% inicial para confirmar tu alquiler.</span>
+                                    </p>
+                                </div>
+                            </div>
+                        `,
+                        width: '500px',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="bi bi-check-lg"></i> Continuar',
+                        cancelButtonText: '<i class="bi bi-arrow-left"></i> Volver',
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d',
+                        reverseButtons: true,
+                        background: isDark ? '#1e2130' : '#ffffff',
+                        color: isDark ? '#e8eaed' : '#2c3e50',
+                        showClass: {
+                            popup: 'animate__animated animate__fadeIn animate__faster'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOut animate__faster'
+                        },
+                        customClass: {
+                            confirmButton: 'swal2-confirm-custom-large',
+                            cancelButton: 'swal2-cancel-custom-large',
+                            popup: 'swal2-popup-custom'
+                        },
+                        buttonsStyling: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((pagoResult) => {
+                        if (pagoResult.isConfirmed) {
+                            // Obtener si eligió pago contra entrega
+                            const pagoContraEntrega = document.getElementById('pagoContraEntrega').checked;
+                            
+                            // Mostrar loading
+                            Swal.fire({
+                                title: 'Procesando Alquiler...',
+                                html: '<div style="padding: 20px;"><i class="bi bi-hourglass-split" style="font-size: 48px; color: #8cbc00; animation: spin 1s linear infinite;"></i><p style="margin-top: 15px; color: #6c757d;">Por favor espera mientras procesamos tu solicitud</p></div>',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                background: isDark ? '#1e2130' : '#ffffff',
+                                color: isDark ? '#e8eaed' : '#2c3e50',
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Enviar formulario
+                            const formData = new URLSearchParams();
+                            formData.append('direccionEntrega', datosAlquiler.direccion);
+                            formData.append('fechaInicio', datosAlquiler.fechaInicio);
+                            formData.append('fechaFin', datosAlquiler.fechaFin);
+                            formData.append('requiereTransporte', requiereTransporte ? 'true' : 'false');
+                            formData.append('pagoContraEntrega', pagoContraEntrega ? 'true' : 'false');
+                            if (datosAlquiler.notas) formData.append('notasAdicionales', datosAlquiler.notas);
+                            
+                            console.log('>>> Enviando alquiler con requiereTransporte:', requiereTransporte);
+                            console.log('>>> Enviando alquiler con pagoContraEntrega:', pagoContraEntrega);
+
+                            fetch('/alquiler/procesar', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: formData.toString()
+                            })
+                            .then(response => {
+                                if (response.redirected) {
+                                    window.location.href = response.url;
+                                }
+                            })
+                            .catch(error => {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Ocurrió un error al procesar el alquiler. Por favor intenta nuevamente.',
+                                    confirmButtonColor: '#8cbc00',
+                                    background: isDark ? '#1e2130' : '#ffffff',
+                                    color: isDark ? '#e8eaed' : '#2c3e50'
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+
+    <!-- Vista Previa del Carrito -->
+    <div th:replace="~{fragments/cart-preview :: cart-preview}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/format-utils.js}"></script>
+    <script th:src="@{/js/cart-preview.js}"></script>
+    <script th:inline="javascript">
+        // Variables globales del carrito desde el servidor
+        const TOTAL_CARRITO_GLOBAL = /*[[${total}]]*/ 0;
+        
+        // Actualizar contador con el valor del servidor
+        document.addEventListener('DOMContentLoaded', function() {
+            const cartCount = /*[[${cantidadItems}]]*/ 0;
+            
+            console.log('Cantidad de items:', cartCount);
+            console.log('Total del carrito:', TOTAL_CARRITO_GLOBAL);
+            
+            // Actualizar contador si existe
+            const cartCountElement = document.getElementById('cartCount');
+            if (cartCountElement) {
+                cartCountElement.textContent = cartCount;
+            }
+        });
+    </script>
+    
+    <!-- Script de notificaciones de pago -->
+    <script th:src="@{/js/payment-notifications.js}"></script>
+
+    <!-- Botón Admin -->
+    <div th:replace="~{fragments/admin-button :: admin-button}"></div>
+
+</body>
+</html>
+

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Fragmento de Vista Previa del Carrito -->
+    <div th:fragment="cart-preview">
+        <!-- Vista Previa del Carrito -->
+        <div class="cart-preview-overlay" id="cartPreviewOverlay" onclick="closeCartPreview()"></div>
+        <div class="cart-preview" id="cartPreview">
+            <div class="cart-preview-header">
+                <h3><i class="bi bi-cart-check"></i> Mi Carrito</h3>
+                <button class="close-preview" onclick="closeCartPreview()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <div class="cart-preview-content" id="cartPreviewContent">
+                <div class="cart-preview-empty">
+                    <i class="bi bi-cart-x"></i>
+                    <p>Tu carrito está vacío</p>
+                </div>
+            </div>
+            
+            <div class="cart-preview-footer" id="cartPreviewFooter" style="display: none;">
+                <div class="cart-preview-total">
+                    <span>Total:</span>
+                    <strong id="cartPreviewTotal">$0</strong>
+                </div>
+                <div class="cart-preview-actions">
+                    <button class="btn-clear-cart" onclick="vaciarCarritoPreview()">
+                        <i class="bi bi-trash"></i> Vaciar
+                    </button>
+                    <a href="/carrito" class="btn-view-cart">
+                        Ver Carrito Completo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

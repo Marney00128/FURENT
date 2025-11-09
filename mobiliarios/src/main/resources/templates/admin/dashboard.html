@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | FURENT</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/admin-styles.css">
+    <link rel="stylesheet" href="/css/admin-notifications.css">
+    <link rel="stylesheet" href="/css/custom-resenas-modal.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="bi bi-house-heart"></i>
+            <h2>FURENT <span>Admin</span></h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="/admin/dashboard" class="nav-item active">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/admin/usuarios" class="nav-item">
+                <i class="bi bi-people"></i>
+                <span>Usuarios</span>
+            </a>
+            <a href="/admin/productos" class="nav-item">
+                <i class="bi bi-box-seam"></i>
+                <span>Productos</span>
+            </a>
+            <a href="/admin/pedidos" class="nav-item">
+                <i class="bi bi-cart-check"></i>
+                <span>Pedidos</span>
+            </a>
+            <a href="/admin/categorias" class="nav-item">
+                <i class="bi bi-tags"></i>
+                <span>Categorías</span>
+            </a>
+            <a href="/admin/reportes" class="nav-item">
+                <i class="bi bi-journal-text"></i>
+                <span>Registros</span>
+            </a>
+            <a href="/admin/reportes-analytics" class="nav-item">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Reportes</span>
+            </a>
+            <a href="/admin/configuracion" class="nav-item">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/" class="nav-item">
+                <i class="bi bi-house-door"></i>
+                <span>Ir al Sitio</span>
+            </a>
+            <a href="/logout" class="nav-item logout">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1>Dashboard</h1>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" placeholder="Buscar...">
+                </div>
+
+                <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                    <i class="bi bi-moon-stars"></i>
+                </button>
+
+                <button class="notification-btn">
+                    <i class="bi bi-bell"></i>
+                    <span class="badge" style="display: none;">0</span>
+                </button>
+
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        <span th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">A</span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name" th:text="${session.usuarioNombre}">Admin</span>
+                        <span class="user-role">Administrador</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alerts -->
+        <div class="alert alert-success" th:if="${mensaje}">
+            <i class="bi bi-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+
+        <div class="alert alert-error" th:if="${error}">
+            <i class="bi bi-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 th:text="${totalUsuarios}">0</h3>
+                    <p>Total Usuarios</p>
+                    <div class="stat-footer">
+                        <span class="stat-change positive">
+                            <i class="bi bi-arrow-up"></i> 12%
+                        </span>
+                        <span>vs mes anterior</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 th:text="${totalProductos}">0</h3>
+                    <p>Total Productos</p>
+                    <div class="stat-footer">
+                        <span class="stat-change positive">
+                            <i class="bi bi-arrow-up"></i> 8%
+                        </span>
+                        <span>vs mes anterior</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 th:text="${totalAdmins}">0</h3>
+                    <p>Administradores</p>
+                    <div class="stat-footer">
+                        <span class="stat-change neutral">
+                            <i class="bi bi-dash"></i> 0%
+                        </span>
+                        <span>sin cambios</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                    <i class="bi bi-person-check"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 th:text="${totalUsers}">0</h3>
+                    <p>Usuarios Activos</p>
+                    <div class="stat-footer">
+                        <span class="stat-change positive">
+                            <i class="bi bi-arrow-up"></i> 15%
+                        </span>
+                        <span>vs mes anterior</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Recent Users -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="bi bi-person-plus"></i> Últimos Usuarios Registrados</h2>
+                    <a href="/admin/usuarios" class="btn-link">Ver todos</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Rol</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="usuario : ${ultimosUsuarios}">
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar-small">
+                                                <span th:text="${#strings.substring(usuario.nombre, 0, 1)}">U</span>
+                                            </div>
+                                            <span th:text="${usuario.nombre}">Usuario</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${usuario.correo}">email@example.com</td>
+                                    <td th:text="${usuario.telefono}">+57 300 000 0000</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${usuario.rol == 'ADMIN' ? 'badge-admin' : 'badge-user'}" 
+                                              th:text="${usuario.rol}">USER</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-icon btn-ver-detalles" title="Ver detalles" th:data-user-id="${usuario.id}">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-icon" title="Editar">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(ultimosUsuarios)}">
+                                    <td colspan="5" class="text-center">No hay usuarios registrados</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="bi bi-lightning"></i> Acciones Rápidas</h2>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <a href="/admin/productos/nuevo" class="quick-action-btn">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>Nuevo Producto</span>
+                        </a>
+                        <a href="/admin/usuarios" class="quick-action-btn">
+                            <i class="bi bi-person-plus"></i>
+                            <span>Gestionar Usuarios</span>
+                        </a>
+                        <a href="/admin/pedidos" class="quick-action-btn">
+                            <i class="bi bi-cart-check"></i>
+                            <span>Ver Pedidos</span>
+                        </a>
+                        <a href="/admin/reportes" class="quick-action-btn">
+                            <i class="bi bi-journal-text"></i>
+                            <span>Ver Registros</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="bi bi-graph-up"></i> Actividad Reciente</h2>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; margin-bottom: 20px; position: relative;">
+                    <canvas id="activityChart"></canvas>
+                    <div id="noDataMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--text-secondary);">
+                        <i class="bi bi-bar-chart" style="font-size: 48px; opacity: 0.3;"></i>
+                        <p style="margin-top: 10px;">No hay datos de actividad disponibles</p>
+                    </div>
+                </div>
+                
+                <!-- Lista de actividades recientes -->
+                <div class="activity-list">
+                    <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-secondary);">
+                        <i class="bi bi-clock-history"></i> Últimas Actividades
+                    </h3>
+                    <div class="activity-items">
+                        <div class="activity-item" th:each="log : ${actividadReciente}">
+                            <div class="activity-icon" th:classappend="${log.action}">
+                                <i th:class="${log.action == 'LOGIN' ? 'bi bi-box-arrow-in-right' : 
+                                              log.action == 'CREATE' ? 'bi bi-plus-circle' :
+                                              log.action == 'UPDATE' ? 'bi bi-pencil-square' :
+                                              log.action == 'DELETE' ? 'bi bi-trash' :
+                                              log.action == 'RENTAL' ? 'bi bi-cart-check' :
+                                              log.action == 'PAYMENT' ? 'bi bi-credit-card' : 'bi bi-activity'}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-description" th:text="${log.description}">Descripción de actividad</div>
+                                <div class="activity-meta">
+                                    <span class="activity-user" th:text="${log.userName}">Usuario</span>
+                                    <span class="activity-time" th:text="${#temporals.format(log.timestamp, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(actividadReciente)}" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i class="bi bi-inbox" style="font-size: 48px; opacity: 0.3;"></i>
+                            <p>No hay actividad reciente registrada</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Detalles de Usuario -->
+    <div id="userDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="bi bi-person-circle"></i> Detalles del Usuario</h2>
+                <button class="modal-close" onclick="cerrarModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="user-details-grid">
+                    <div class="detail-item">
+                        <i class="bi bi-person"></i>
+                        <div class="detail-content">
+                            <label>Nombre</label>
+                            <span id="modalNombre">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-envelope"></i>
+                        <div class="detail-content">
+                            <label>Correo</label>
+                            <span id="modalCorreo">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-telephone"></i>
+                        <div class="detail-content">
+                            <label>Teléfono</label>
+                            <span id="modalTelefono">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-shield-check"></i>
+                        <div class="detail-content">
+                            <label>Rol</label>
+                            <span id="modalRol" class="badge">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-clock"></i>
+                        <div class="detail-content">
+                            <label>Último Inicio de Sesión</label>
+                            <span id="modalUltimoInicioSesion">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="bi bi-cart-check"></i>
+                        <div class="detail-content">
+                            <label>Total de Alquileres</label>
+                            <span id="modalTotalAlquileres">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item full-width">
+                    <i class="bi bi-key"></i>
+                    <div class="detail-content">
+                        <label>ID de Usuario</label>
+                        <span id="modalId" class="text-muted">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('collapsed');
+            document.querySelector('.main-content').classList.toggle('expanded');
+        }
+
+        // Toggle Dark Mode
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            body.classList.toggle('dark-mode');
+            
+            // Cambiar ícono
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.classList.remove('bi-moon-stars');
+                themeIcon.classList.add('bi-sun');
+                localStorage.setItem('adminTheme', 'dark');
+            } else {
+                themeIcon.classList.remove('bi-sun');
+                themeIcon.classList.add('bi-moon-stars');
+                localStorage.setItem('adminTheme', 'light');
+            }
+        }
+
+        // Cargar tema guardado y inicializar todo cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('adminTheme');
+            const themeIcon = document.querySelector('.theme-toggle i');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.classList.remove('bi-moon-stars');
+                themeIcon.classList.add('bi-sun');
+            }
+
+            // Animar elementos al cargar
+            animateElements();
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.opacity = '0';
+                    setTimeout(() => alert.remove(), 300);
+                });
+            }, 5000);
+
+            // Animar contadores
+            document.querySelectorAll('.stat-content h3').forEach(counter => {
+                const target = parseInt(counter.textContent);
+                let current = 0;
+                const increment = target / 50;
+                
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        counter.textContent = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+                
+                setTimeout(updateCounter, 500);
+            });
+
+            // Inicializar event listeners para botones de ver detalles
+            document.querySelectorAll('.btn-ver-detalles').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    if (userId) {
+                        verDetallesUsuario(userId);
+                    }
+                });
+            });
+
+            // Inicializar event listeners del modal
+            const modal = document.getElementById('userDetailsModal');
+            if (modal) {
+                // Cerrar modal al hacer clic fuera
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        cerrarModal();
+                    }
+                });
+            }
+
+            // Cerrar modal con tecla ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal) {
+                    const modalDisplay = window.getComputedStyle(modal).display;
+                    if (modalDisplay !== 'none') {
+                        cerrarModal();
+                    }
+                }
+            });
+        });
+
+        // Animar elementos
+        function animateElements() {
+            const cards = document.querySelectorAll('.stat-card, .card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        }
+
+        // Ver detalles del usuario
+        async function verDetallesUsuario(userId) {
+            try {
+                const response = await fetch(`/admin/usuarios/${userId}/detalles`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Llenar el modal con los datos
+                document.getElementById('modalNombre').textContent = data.nombre || '-';
+                document.getElementById('modalCorreo').textContent = data.correo || '-';
+                document.getElementById('modalTelefono').textContent = data.telefono || '-';
+                document.getElementById('modalId').textContent = data.id || '-';
+                document.getElementById('modalTotalAlquileres').textContent = data.totalAlquileres || '0';
+                
+                // Formatear fecha de último inicio de sesión
+                if (data.ultimoInicioSesion && data.ultimoInicioSesion !== 'Nunca') {
+                    const fecha = new Date(data.ultimoInicioSesion);
+                    document.getElementById('modalUltimoInicioSesion').textContent = fecha.toLocaleString('es-ES');
+                } else {
+                    document.getElementById('modalUltimoInicioSesion').textContent = 'Nunca';
+                }
+                
+                // Configurar badge del rol
+                const rolBadge = document.getElementById('modalRol');
+                rolBadge.textContent = data.rol || '-';
+                rolBadge.className = 'badge';
+                if (data.rol === 'ADMIN') {
+                    rolBadge.classList.add('badge-admin');
+                } else {
+                    rolBadge.classList.add('badge-user');
+                }
+                
+                // Mostrar el modal
+                document.getElementById('userDetailsModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Animar entrada del modal
+                setTimeout(() => {
+                    document.querySelector('.modal-content').style.transform = 'scale(1)';
+                    document.querySelector('.modal-content').style.opacity = '1';
+                }, 10);
+                
+            } catch (error) {
+                console.error('Error al cargar detalles:', error);
+                alert('Error al cargar los detalles del usuario');
+            }
+        }
+
+        // Cerrar modal
+        function cerrarModal() {
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('userDetailsModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 200);
+        }
+        
+        // Gráfico de actividad
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        
+        // Datos del gráfico
+        const activityData = [
+            /*[[${totalLogins}]]*/ 0,
+            /*[[${totalCreaciones}]]*/ 0,
+            /*[[${totalActualizaciones}]]*/ 0,
+            /*[[${totalEliminaciones}]]*/ 0,
+            /*[[${totalAlquileresLog}]]*/ 0,
+            /*[[${totalPagos}]]*/ 0
+        ];
+        
+        console.log('Activity Data:', activityData);
+        console.log('Total Logins:', /*[[${totalLogins}]]*/ 0);
+        console.log('Total Creaciones:', /*[[${totalCreaciones}]]*/ 0);
+        console.log('Total Actualizaciones:', /*[[${totalActualizaciones}]]*/ 0);
+        
+        // Verificar si hay datos
+        const hasData = activityData.some(value => value > 0);
+        console.log('Has Data:', hasData);
+        
+        if (!hasData) {
+            console.log('No hay datos, mostrando mensaje');
+            document.getElementById('activityChart').style.display = 'none';
+            document.getElementById('noDataMessage').style.display = 'block';
+        } else {
+            console.log('Hay datos, mostrando gráfico');
+        }
+        
+        const activityChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Logins', 'Creaciones', 'Actualizaciones', 'Eliminaciones', 'Alquileres', 'Pagos'],
+                datasets: [{
+                    label: 'Cantidad de Actividades',
+                    data: activityData,
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',   // Login - Azul
+                        'rgba(16, 185, 129, 0.8)',   // Create - Verde
+                        'rgba(245, 158, 11, 0.8)',   // Update - Naranja
+                        'rgba(239, 68, 68, 0.8)',    // Delete - Rojo
+                        'rgba(139, 92, 246, 0.8)',   // Rental - Morado
+                        'rgba(236, 72, 153, 0.8)'    // Payment - Rosa
+                    ],
+                    borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(239, 68, 68, 1)',
+                        'rgba(139, 92, 246, 1)',
+                        'rgba(236, 72, 153, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 10,
+                        ticks: {
+                            stepSize: 1,
+                            color: '#94a3b8',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            },
+                            padding: 8
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.1)',
+                            drawBorder: false,
+                            lineWidth: 1
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11,
+                                weight: '600'
+                            },
+                            padding: 8
+                        },
+                        grid: {
+                            display: false
+                        },
+                        border: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    </script>
+    
+    <style>
+        /* Estilos para la lista de actividades */
+        .activity-list {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border-color);
+        }
+        
+        .activity-items {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: var(--primary-color);
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.LOGIN { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .activity-icon.CREATE { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .activity-icon.UPDATE { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .activity-icon.DELETE { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .activity-icon.RENTAL { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .activity-icon.PAYMENT { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-description {
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .activity-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .activity-user {
+            font-weight: 600;
+        }
+        
+        .activity-time {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .activity-time::before {
+            content: '•';
+            font-size: 16px;
+        }
+    </style>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Script de notificaciones admin -->
+    <script src="/js/admin-notifications.js"></script>
+</body>
+</html>

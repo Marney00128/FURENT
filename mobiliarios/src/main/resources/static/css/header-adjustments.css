@@ -1,0 +1,714 @@
+/* ========================================
+   HEADER RESPONSIVE ADJUSTMENTS
+   Optimizar espacio y distribución del header
+   ======================================== */
+
+/* Aumentar altura del header principal */
+.main-header {
+    padding: 8px 0 !important;
+    min-height: 64px !important;
+}
+
+/* ===== Responsive fixes: Sobre nosotros ===== */
+@media (max-width: 1024px) {
+  /* Reducir altura del encabezado de página */
+  body.page-about .page-header {
+    padding: 28px 0 !important;
+    min-height: unset !important;
+  }
+  body.page-about .page-header .container { padding-top: 0 !important; }
+  body.page-about .page-title { margin: 0 0 6px 0 !important; }
+  body.page-about .page-breadcrumb { margin: 0 !important; }
+
+  /* Compactar separación antes del contenido */
+  body.page-about .content-principal { padding-top: 8px !important; }
+  body.page-about .section-header { margin-top: 8px !important; }
+
+  /* Ajustar grilla de la sección about para evitar huecos grandes */
+  body.page-about .content-about { gap: 16px !important; }
+  body.page-about .image-about-page img { max-height: 280px; object-fit: cover; width: 100%; border-radius: 14px; }
+
+  /* Secciones subsecuentes más compactas */
+  body.page-about .mission-vision { margin-top: 18px !important; }
+  body.page-about .team-section { margin-top: 18px !important; }
+}
+
+/* Modo móvil activado por JS (alternativa a media queries) */
+body.mobile-ui .nav-principal,
+body.mobile-ui .main-header .nav-principal,
+body.mobile-ui .header-content > .nav-principal,
+body.mobile-ui .nav-container,
+body.mobile-ui .nav-container .nav-principal,
+/* Ocultar controles SOLO en el header (no en el panel móvil) */
+body.mobile-ui .main-header .login-btn,
+body.mobile-ui .header-content .login-btn,
+body.mobile-ui .main-header .theme-toggle-btn,
+body.mobile-ui .header-content .theme-toggle-btn,
+body.mobile-ui .main-header .payment-bell-btn,
+body.mobile-ui .header-content .payment-bell-btn,
+body.mobile-ui .main-header .cart-btn-header,
+body.mobile-ui .header-content .cart-btn-header,
+body.mobile-ui .main-header .user-menu,
+body.mobile-ui .header-content .user-menu { display: none !important; }
+
+body.mobile-ui .main-header .header-content {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+body.mobile-ui .main-header .logo {
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+body.mobile-ui .hamburger-btn {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  height: 40px !important;
+  width: 44px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(0,0,0,0.08) !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+
+body.dark-mode.mobile-ui .hamburger-btn {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important;
+}
+
+/* =========================
+   Responsive & Mobile Menu
+   ========================= */
+/* Botón hamburguesa oculto en desktop */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: 0;
+  padding: 8px;
+  margin-left: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.hamburger-btn i { font-size: 1.5rem; line-height: 1; }
+
+/* Panel de navegación móvil */
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 80%;
+  max-width: 360px;
+  height: 100vh;
+  background: #ffffff;
+  box-shadow: -8px 0 24px rgba(0,0,0,0.15);
+  transition: right .25s ease;
+  z-index: 1000;
+  padding: 20px 16px;
+  overflow-y: auto;
+}
+.mobile-nav.open { right: 0; }
+.mobile-nav a {
+  display: block;
+  padding: 12px 10px;
+  margin: 4px 0;
+  border-radius: 10px;
+  color: #0f172a;
+}
+.mobile-nav a.active { background: #f1f5f9; }
+
+/* Mostrar y estilizar acciones dentro del panel móvil */
+.mobile-nav .login-btn,
+.mobile-nav .theme-toggle-btn,
+.mobile-nav .cart-btn-header {
+  display: block !important;
+  width: 100% !important;
+  margin: 10px 0 !important;
+}
+.mobile-nav .theme-toggle-btn i,
+.mobile-nav .cart-btn-header i { pointer-events: none; }
+
+/* Logo dentro del panel móvil */
+.mobile-nav .logo,
+.mobile-nav .logo.logo-in-panel {
+  position: static !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 220px !important;
+  margin: 10px auto 14px auto !important;
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+  background: #f1f5f9 !important; /* light slab */
+}
+body.dark-mode .mobile-nav .logo,
+body.dark-mode .mobile-nav .logo.logo-in-panel {
+  background: rgba(255,255,255,0.06) !important;
+}
+.mobile-nav .logo i { font-size: 1.1rem; margin-right: 8px; }
+.mobile-nav .logo span { font-size: 1rem; }
+
+/* Resumen de usuario en panel móvil */
+.mobile-user-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px;
+  margin: 6px 0 12px 0;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.mobile-user-summary .mus-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #10b981; color: #ffffff; font-weight: 700;
+}
+.mobile-user-summary .mus-name { color: #0f172a; }
+
+/* Logout dentro del panel móvil */
+.mobile-nav a.logout-link {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 6px !important;
+}
+
+/* Dark mode variantes para bloque de usuario */
+body.dark-mode .mobile-user-summary { background: rgba(255,255,255,0.06); }
+body.dark-mode .mobile-user-summary .mus-name { color: #e5e7eb; }
+
+/* Overlay para cerrar el menú */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 999;
+}
+.mobile-overlay.show { opacity: 1; pointer-events: auto; }
+
+/* Dark mode variantes */
+body.dark-mode .hamburger-btn { background: transparent; }
+body.dark-mode .mobile-nav { background: #0b1220; box-shadow: -8px 0 24px rgba(0,0,0,0.5); }
+body.dark-mode .mobile-nav a { color: #e5e7eb; }
+body.dark-mode .mobile-nav a.active { background: rgba(255,255,255,0.06); }
+
+/* Botón hamburguesa en oscuro: contraste y borde sutil */
+body.dark-mode .hamburger-btn {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #e5e7eb !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4) !important;
+}
+
+/* Breakpoints */
+@media (max-width: 991px) {
+  /* Ocultar cualquier navegación de escritorio en todas las variantes */
+  .nav-principal,
+  .main-header .nav-principal,
+  .header-content > .nav-principal,
+  .nav-container,
+  .nav-container .nav-principal {
+    display: none !important;
+  }
+  /* Ocultar controles que pasan al panel móvil SOLO en el header */
+  .main-header .login-btn,
+  .header-content .login-btn,
+  .main-header .theme-toggle-btn,
+  .header-content .theme-toggle-btn,
+  .main-header .payment-bell-btn,
+  .header-content .payment-bell-btn,
+  .main-header .cart-btn-header,
+  .header-content .cart-btn-header,
+  .main-header .user-menu,
+  .header-content .user-menu { display: none !important; }
+
+  /* Layout: logo centrado y hamburguesa a la derecha */
+  .main-header .header-content {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .main-header .logo {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+  .hamburger-btn {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    height: 40px !important;
+    width: 44px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  }
+  .hamburger-btn:hover { filter: brightness(0.98); }
+  .hamburger-btn { display: inline-flex; align-items: center; justify-content: center; }
+  .header-content { gap: 8px; }
+}
+
+@media (max-width: 640px) {
+  .logo span { font-size: 1rem; }
+}
+
+/* Logo clickeable: asegurar interacción por encima de overlays */
+.main-header .logo {
+    position: relative !important;
+    z-index: 1001 !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+
+/* Logout link: buen contraste en tema claro/base */
+.user-dropdown-menu a.logout-link { 
+    color: #dc2626 !important; /* rojo 600 */
+}
+.user-dropdown-menu a.logout-link:hover { 
+    background: rgba(220, 38, 38, 0.08) !important; 
+    color: #dc2626 !important; 
+}
+
+/* Optimizar contenedor del header con mejor flexbox */
+.header-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+    min-height: 48px !important;
+    padding: 6px 0 !important;
+    flex-wrap: nowrap !important;
+}
+
+/* Orden explícito para restaurar la ubicación original (derecha) */
+.main-header .header-content > .logo { order: 0 !important; }
+.main-header .header-content > .nav-principal { order: 1 !important; flex: 1 1 auto !important; }
+.main-header .header-content > .user-menu { order: 2 !important; }
+.main-header .header-content > .payment-bell-btn { order: 3 !important; }
+.main-header .header-content > .login-btn { order: 4 !important; }
+.main-header .header-content > .cart-btn-header { order: 5 !important; }
+.main-header .header-content > .theme-toggle-btn { order: 6 !important; }
+
+/* Asegurar visibilidad del carrito (no se oculte por display/grid) */
+.main-header .header-content > .cart-btn-header {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
+.main-header .header-content > .cart-btn-header i { color: inherit !important; }
+
+/* Evitar que login/theme crezcan y desplacen al carrito */
+.login-btn, .theme-toggle-btn { flex: 0 0 auto !important; }
+
+/* Ajustar el top-bar */
+.top-bar {
+    padding: 10px 0 !important;
+    font-size: 1.25rem;
+}
+
+/* Logo más grande */
+.logo {
+    padding: 8px 15px !important;
+    font-size: 1.5rem !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+.logo i {
+    font-size: 1.6rem !important;
+}
+
+/* Navegación principal más grande */
+.nav-principal {
+    display: flex !important;
+    gap: 15px !important;
+    flex-shrink: 1 !important;
+    flex-wrap: nowrap !important;
+}
+
+.nav-principal a {
+    padding: 10px 18px !important;
+    font-size: 1.3rem !important;
+    white-space: nowrap !important;
+    font-weight: 600 !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.nav-principal a i {
+    font-size: 1.2rem !important;
+}
+
+/* Área de acciones del usuario (botones derecha) */
+.header-content > .user-menu,
+.header-content > .cart-btn-header,
+.header-content > .theme-toggle-btn,
+.header-content > .login-btn {
+    flex-shrink: 0 !important;
+}
+
+/* Ajustar menú de usuario */
+.user-menu {
+    padding: 1px !important;
+}
+
+.user-menu-toggle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 1.3rem !important;
+    white-space: nowrap !important;
+}
+
+.user-menu-toggle span {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.user-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 1.1rem !important;
+    flex-shrink: 0 !important;
+}
+
+.user-menu-toggle i {
+    flex-shrink: 0 !important;
+    font-size: 1.1rem !important;
+}
+
+/* Icono del enlace de cierre de sesión */
+.logout-link i { color: #ef4444 !important; }
+
+/* Legibilidad de CTAs primarios en ambos temas */
+.btn.btn-primary { color: #ffffff !important; }
+.btn.btn-primary i { color: #ffffff !important; }
+.btn.btn-primary:hover { color: #ffffff !important; }
+
+/* =========================
+   Light Theme Overrides
+   ========================= */
+/* Menú de usuario en tema claro */
+body:not(.dark-mode) .user-menu {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 9999px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06) !important;
+}
+body:not(.dark-mode) .user-menu:hover {
+    background: #ffffff !important;
+    border-color: #d1d5db !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08) !important;
+}
+
+/* Dropdown en claro: hovers neutros (no verdes) */
+body:not(.dark-mode) .user-dropdown-menu a { color: #475569 !important; }
+body:not(.dark-mode) .user-dropdown-menu a:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+    color: #111827 !important;
+}
+
+/* Texto y chevrón del pill en light mode */
+body:not(.dark-mode) .user-menu-toggle span { color: #1f2937 !important; }
+body:not(.dark-mode) .user-menu-toggle i { color: #9ca3af !important; }
+
+/* Tema claro: evitar tinte amarillo en el interior del pill */
+body:not(.dark-mode) .user-menu-toggle { background: #ffffff !important; }
+body:not(.dark-mode) .user-menu-toggle:hover { background: #ffffff !important; }
+
+/* Anillo degradado azul/cian en tema claro (solo al hover) */
+body:not(.dark-mode) .user-menu-toggle {
+    position: relative !important;
+    border-radius: 9999px !important;
+    isolation: isolate !important;
+}
+body:not(.dark-mode) .user-menu-toggle::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #60a5fa, #22d3ee);
+    padding: 2px;
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    opacity: 0;
+    transition: opacity .25s ease, filter .25s ease;
+    pointer-events: none;
+    z-index: -1;
+}
+body:not(.dark-mode) .user-menu-toggle:hover::before {
+    opacity: 1;
+    filter: brightness(1.05) saturate(1.05);
+}
+
+/* Empty states en claro */
+body:not(.dark-mode) .no-products,
+body:not(.dark-mode) .empty-alquileres {
+    background: #f9fafb !important; /* leve tinte para resaltarlo */
+    border: 1px solid #e5e7eb !important;
+    color: #475569 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06) !important; /* sombra sutil */
+    transition: none !important;
+}
+
+/* Secciones principales del home en tema claro */
+body:not(.dark-mode) .section-header .section-title { color: #0f172a !important; }
+body:not(.dark-mode) .section-header .section-subtitle { color: #475569 !important; }
+body:not(.dark-mode) .content-principal { background: transparent !important; }
+body:not(.dark-mode) .categories { background: transparent !important; }
+body:not(.dark-mode) .testimonials-section { background: #ffffff !important; }
+body:not(.dark-mode) .newsletter-section { background: #f8fafc !important; }
+
+/* Botón primario en tema claro: fondo con gradiente verde y texto blanco */
+body:not(.dark-mode) .btn.btn-primary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.15) !important;
+}
+body:not(.dark-mode) .btn.btn-primary i { color: #ffffff !important; }
+body:not(.dark-mode) .btn.btn-primary:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    color: #ffffff !important;
+}
+
+/* Favoritos (corazones) en tema claro */
+body:not(.dark-mode) .favorite-btn i,
+body:not(.dark-mode) .wishlist-toggle i,
+body:not(.dark-mode) .heart-icon,
+body:not(.dark-mode) .btn-favorite i,
+body:not(.dark-mode) .favorite-icon {
+    color: #10b981 !important; /* verde acorde al tema claro */
+    fill: currentColor !important;
+    stroke: currentColor !important;
+}
+/* Estado activo/seleccionado */
+body:not(.dark-mode) .favorite-btn.active i,
+body:not(.dark-mode) .wishlist-toggle.active i,
+body:not(.dark-mode) .btn-favorite.active i,
+body:not(.dark-mode) .favorite-icon.active,
+body:not(.dark-mode) [data-favorite="true"] .heart-icon {
+    color: #059669 !important;
+}
+/* Hover sin mover/animar */
+body:not(.dark-mode) .favorite-btn:hover i,
+body:not(.dark-mode) .wishlist-toggle:hover i,
+body:not(.dark-mode) .btn-favorite:hover i,
+body:not(.dark-mode) .heart-icon:hover {
+    color: #34d399 !important;
+}
+
+/* === Empty actions (Volver al inicio / Contactar) en tema claro === */
+body:not(.dark-mode) .no-products-actions .btn { 
+    border-radius: 22px !important; 
+    box-shadow: none !important; 
+    transition: all .25s ease !important;
+}
+/* Primario: Volver al inicio (relleno verde) ya cubierto por .btn-primary */
+
+/* Secundario: Contactar (contorno verde sobre fondo blanco) */
+body:not(.dark-mode) .no-products-actions .btn.btn-secondary {
+    background: transparent !important;
+    color: #10b981 !important;
+    border: 2px solid #10b981 !important;
+}
+body:not(.dark-mode) .no-products-actions .btn.btn-secondary i { color: #10b981 !important; }
+body:not(.dark-mode) .no-products-actions .btn.btn-secondary:hover {
+    background: rgba(16,185,129,0.08) !important;
+    color: #059669 !important;
+    border-color: #059669 !important;
+}
+
+/* === Contenedor de búsqueda y filtros (tema claro) === */
+body:not(.dark-mode) .search-filter-container {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 16px !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06) !important;
+    background-image: none !important;
+}
+body:not(.dark-mode) .search-filter-container::before,
+body:not(.dark-mode) .search-filter-container::after { background: none !important; background-image: none !important; box-shadow: none !important; }
+body:not(.dark-mode) .search-box input {
+    background: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+body:not(.dark-mode) .search-box,
+body:not(.dark-mode) .search-box::before,
+body:not(.dark-mode) .search-box::after { background: #ffffff !important; background-image: none !important; box-shadow: none !important; }
+body:not(.dark-mode) .search-box input::placeholder { color: #9ca3af !important; }
+body:not(.dark-mode) .filter-group .filter-select,
+body:not(.dark-mode) .filter-group select,
+body:not(.dark-mode) .filter-input,
+body:not(.dark-mode) .filter-group input {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    color: #1f2937 !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+body:not(.dark-mode) .filters-row,
+body:not(.dark-mode) .filter-group,
+body:not(.dark-mode) .filters-row::before,
+body:not(.dark-mode) .filters-row::after,
+body:not(.dark-mode) .filter-group::before,
+body:not(.dark-mode) .filter-group::after { background: transparent !important; background-image: none !important; box-shadow: none !important; }
+body:not(.dark-mode) .filter-group select:focus,
+body:not(.dark-mode) .filter-group input:focus,
+body:not(.dark-mode) .search-box input:focus {
+    border-color: #d1d5db !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.08) !important; /* foco sutil azul/gris */
+}
+body:not(.dark-mode) .btn-clear-filters {
+    background: #fee2e2 !important; /* rojo claro */
+    color: #b91c1c !important;
+    border: 1px solid #fecaca !important;
+}
+body:not(.dark-mode) .btn-clear-filters:hover {
+    background: #fecaca !important;
+    color: #991b1b !important;
+}
+
+/* Botones del header más grandes */
+.cart-btn-header,
+.theme-toggle-btn {
+    padding: 12px 14px !important;
+    font-size: 1.4rem !important;
+    min-width: 50px !important;
+    height: 50px !important;
+}
+
+.login-btn {
+    padding: 12px 20px !important;
+    font-size: 1.3rem !important;
+    white-space: nowrap !important;
+    font-weight: 500 !important;
+}
+
+/* Badge del carrito */
+.cart-badge {
+    font-size: 0.75rem !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    padding: 3px 5px !important;
+}
+
+/* Ajustar el after del header (línea decorativa) */
+.main-header::after {
+    height: 2px !important;
+}
+
+/* ================================
+   Footer legible
+   ================================ */
+.site-footer .footer-menu a {
+    font-size: 1.05rem !important;
+}
+
+.site-footer h3 {
+    font-size: 1.15rem !important;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Para pantallas medianas (laptops pequeños) */
+@media (max-width: 1200px) {
+    .nav-principal a {
+        padding: 10px 14px !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .logo {
+        font-size: 1.4rem !important;
+    }
+    
+    .header-content {
+        gap: 15px !important;
+    }
+}
+
+/* Para pantallas más pequeñas */
+@media (max-width: 992px) {
+    .nav-principal a {
+        padding: 10px 12px !important;
+        font-size: 1.1rem !important;
+    }
+    
+    .nav-principal a i {
+        margin-right: 4px !important;
+    }
+    
+    .logo {
+        font-size: 1.3rem !important;
+        padding: 8px 12px !important;
+    }
+    
+    .header-content {
+        gap: 12px !important;
+    }
+    
+    .cart-btn-header,
+    .theme-toggle-btn {
+        padding: 10px 12px !important;
+        font-size: 1.3rem !important;
+        min-width: 45px !important;
+        height: 45px !important;
+    }
+}
+
+/* Solo ocultar nombre de usuario en pantallas MUY pequeñas */
+@media (max-width: 850px) {
+    .user-menu-toggle span {
+        display: none !important;
+    }
+}
+
+/* Para tablets */
+@media (max-width: 768px) {
+    .nav-principal {
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+    }
+    
+    .header-content {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
+    }
+}

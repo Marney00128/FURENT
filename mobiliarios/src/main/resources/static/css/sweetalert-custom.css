@@ -1,0 +1,28 @@
+/* Estilos personalizados para SweetAlert2 */
+.swal-custom-popup {
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.swal-custom-title {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.swal-custom-content {
+    font-size: 16px;
+}
+
+.swal2-icon.swal2-success {
+    border-color: #a5dc86;
+    color: #a5dc86;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(165, 220, 134, 0.3);
+}
+
+.swal2-icon.swal2-success [class^=swal2-success-line] {
+    background-color: #a5dc86;
+}

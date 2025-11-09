@@ -1,0 +1,549 @@
+/* ========================================
+   EDITAR PERFIL - ESTILOS MODERNOS
+   ======================================== */
+
+/* Breadcrumb Section */
+.breadcrumb-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 1.5rem 0;
+    margin-bottom: 3rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.breadcrumb a {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: #8cbc00;
+}
+
+.breadcrumb .separator {
+    color: #adb5bd;
+}
+
+.breadcrumb .current {
+    color: #8cbc00;
+    font-weight: 600;
+}
+
+/* Main Container */
+.edit-profile-container {
+    padding: 3rem 0 5rem;
+    min-height: calc(100vh - 400px);
+    background: #f8f9fa;
+}
+
+.dark-mode .edit-profile-container {
+    background: #1a1d23;
+}
+
+/* Edit Page Header */
+.edit-page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+    animation: fadeInDown 0.6s ease;
+}
+
+.btn-back {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: #8cbc00;
+    color: white;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(140, 188, 0, 0.3);
+}
+
+.edit-page-header h1 {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.edit-page-header p {
+    color: #6c757d;
+    font-size: 1.1rem;
+}
+
+/* Alerts */
+.alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-weight: 500;
+    animation: slideInDown 0.4s ease;
+}
+
+.alert i {
+    font-size: 1.5rem;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Grid Layout */
+.edit-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+    animation: fadeInUp 0.6s ease;
+}
+
+/* Edit Card */
+.edit-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: scaleIn 0.5s ease;
+}
+
+.edit-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* Card Header */
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #8cbc00 0%, #6a9600 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.card-icon.security {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.card-header h2 {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: 700;
+}
+
+.card-header p {
+    color: #6c757d;
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+}
+
+/* Form Styles */
+.edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group label i {
+    color: #8cbc00;
+}
+
+.form-group input {
+    padding: 1rem 1.25rem;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #8cbc00;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(140, 188, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-group input.disabled-input {
+    background: #e9ecef;
+    cursor: not-allowed;
+    color: #6c757d;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    flex: 1;
+    padding-right: 3.5rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: #8cbc00;
+}
+
+/* Form Hint */
+.form-hint {
+    color: #6c757d;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: -0.25rem;
+}
+
+.form-hint i {
+    color: #8cbc00;
+}
+
+/* Form Actions */
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8cbc00 0%, #6a9600 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(140, 188, 0, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(140, 188, 0, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+}
+
+.btn-security {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.btn-security:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+}
+
+.btn-outline {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-outline:hover {
+    background: #f8f9fa;
+    border-color: #8cbc00;
+    color: #8cbc00;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(140, 188, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .edit-profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .edit-page-header h1 {
+        font-size: 2rem;
+        margin-top: 3rem;
+    }
+    
+    .btn-back {
+        position: static;
+        margin-bottom: 1.5rem;
+    }
+    
+    .edit-card {
+        padding: 1.5rem;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    .edit-profile-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+}
+
+/* ========================================
+   DARK MODE ADAPTATIONS
+   ======================================== */
+
+.dark-mode .breadcrumb-section {
+    background: linear-gradient(135deg, #1a1d23 0%, #252930 100%);
+    border-bottom-color: #2d3139;
+}
+
+.dark-mode .breadcrumb a {
+    color: #a0a5b0;
+}
+
+.dark-mode .breadcrumb a:hover {
+    color: #8cbc00;
+}
+
+.dark-mode .breadcrumb .separator {
+    color: #4a5060;
+}
+
+.dark-mode .breadcrumb .current {
+    color: #8cbc00;
+}
+
+.dark-mode .edit-page-header h1 {
+    color: #e8eaed;
+}
+
+.dark-mode .edit-page-header p {
+    color: #a0a5b0;
+}
+
+.dark-mode .btn-back {
+    background: #2d3139;
+    color: #e8eaed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-mode .btn-back:hover {
+    background: #8cbc00;
+    color: white;
+}
+
+.dark-mode .edit-card {
+    background: #1e2128;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .edit-card:hover {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.dark-mode .card-header {
+    border-bottom-color: #2d3139;
+}
+
+.dark-mode .card-header h2 {
+    color: #e8eaed;
+}
+
+.dark-mode .card-header p {
+    color: #a0a5b0;
+}
+
+.dark-mode .form-group label {
+    color: #e8eaed;
+}
+
+.dark-mode .form-group input {
+    background: #252930;
+    border-color: #2d3139;
+    color: #e8eaed;
+}
+
+.dark-mode .form-group input:focus {
+    background: #2d3139;
+    border-color: #8cbc00;
+}
+
+.dark-mode .form-group input.disabled-input {
+    background: #1a1d23;
+    color: #6c757d;
+}
+
+.dark-mode .form-hint {
+    color: #a0a5b0;
+}
+
+.dark-mode .toggle-password {
+    color: #a0a5b0;
+}
+
+.dark-mode .toggle-password:hover {
+    color: #8cbc00;
+}
+
+.dark-mode .alert-success {
+    background: linear-gradient(135deg, #1e3a1e 0%, #2d4a2d 100%);
+    color: #8fd19e;
+    border-color: #2d4a2d;
+}
+
+.dark-mode .alert-error {
+    background: linear-gradient(135deg, #3a1e1e 0%, #4a2d2d 100%);
+    color: #f19ea8;
+    border-color: #4a2d2d;
+}
+
+.dark-mode .btn-outline {
+    background: #2d3139;
+    color: #e8eaed;
+    border-color: #3d4149;
+}
+
+.dark-mode .btn-outline:hover {
+    background: #3d4149;
+    border-color: #8cbc00;
+    color: #8cbc00;
+}

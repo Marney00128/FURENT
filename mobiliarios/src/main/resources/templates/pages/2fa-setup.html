@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticación de dos factores | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/cart-preview.css}">
+    <link rel="stylesheet" th:href="@{/css/header-adjustments.css}">
+    <link rel="stylesheet" th:href="@{/css/editar-perfil.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script th:src="@{/js/cart-preview.js}"></script>
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div class="contact-info">
+                <span><i class="bi bi-telephone"></i> +57 300 123 4567</span>
+                <span><i class="bi bi-envelope"></i> info@furniturerent.com</span>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-instagram"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+                <a href="#"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo" aria-label="Ir al inicio">
+                <i class="bi bi-house-heart"></i>
+                <span>FU<strong>RENT</strong></span>
+            </a>
+
+            <nav class="nav-principal">
+                <a href="/">Inicio</a>
+                <a href="/about">Nosotros</a>
+                <a href="/store">Alquilar</a>
+                <a href="/gallery">Galería</a>
+                <a href="/contact">Contacto</a>
+                <a th:if="${session.usuario}" href="/alquiler/mis-alquileres">
+                    <i class="bi bi-calendar-check"></i> Mis alquileres
+                </a>
+            </nav>
+            
+            <!-- Menú de usuario logueado -->
+            <div class="user-menu" th:if="${session.usuario}">
+                <div class="user-menu-toggle">
+                    <div class="user-avatar" th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">U</div>
+                    <span th:text="${session.usuarioNombre}">Usuario</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <strong th:text="${session.usuarioNombre}">Usuario</strong>
+                        <p th:text="${session.usuario.correo}">email@example.com</p>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="/user-account">
+                            <i class="bi bi-person"></i> Mi cuenta
+                        </a>
+                        <a href="/alquiler/mis-alquileres">
+                            <i class="bi bi-calendar-check"></i> Mis alquileres
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/logout" class="logout-link">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón del carrito -->
+            <button class="cart-btn-header" onclick="toggleCart()" aria-label="Ver carrito">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle-btn" aria-label="Cambiar tema">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            
+            <!-- Botón de login si no hay sesión -->
+            <a th:unless="${session.usuario}" href="/login" class="login-btn">
+                <i class="bi bi-person-circle"></i> Iniciar sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-section">
+        <div class="container">
+            <nav class="breadcrumb">
+                <a href="/"><i class="bi bi-house-door"></i> Inicio</a>
+                <span class="separator">/</span>
+                <a href="/user-account">Mi Cuenta</a>
+                <span class="separator">/</span>
+                <span class="current">Autenticación de dos factores</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="edit-profile-container">
+        <div class="container">
+            <!-- Header -->
+            <div class="edit-page-header">
+                <a href="/user-account" class="btn-back">
+                    <i class="bi bi-arrow-left"></i> Volver
+                </a>
+                <h1><i class="bi bi-shield-lock"></i> Autenticación de dos factores</h1>
+                <p>Protege tu cuenta con un código de verificación adicional</p>
+            </div>
+
+            <!-- Mensajes -->
+            <div th:if="${mensaje}" class="alert alert-success">
+                <i class="bi bi-check-circle"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+            
+            <div th:if="${error}" class="alert alert-error">
+                <i class="bi bi-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- Contenido -->
+            <div class="edit-card">
+                <div class="card-header">
+                    <div class="card-icon security">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <h2>Google Authenticator</h2>
+                        <p>Agrega una capa extra de seguridad a tu cuenta</p>
+                    </div>
+                </div>
+
+                <!-- Estado actual -->
+                <div th:if="${twoFactorEnabled}" style="background: #e8f5e9; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #4caf50;">
+                    <p style="margin: 0; color: #2e7d32; font-weight: 600;">
+                        <i class="bi bi-check-circle-fill"></i> Autenticación de dos factores ACTIVADA
+                    </p>
+                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                        Tu cuenta está protegida con Google Authenticator
+                    </p>
+                </div>
+
+                <div th:unless="${twoFactorEnabled}" style="background: #fff3cd; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid #ffc107;">
+                    <p style="margin: 0; color: #856404; font-weight: 600;">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Autenticación de dos factores DESACTIVADA
+                    </p>
+                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                        Habilita 2FA para mayor seguridad
+                    </p>
+                </div>
+
+                <!-- Información -->
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <h3 style="margin: 0 0 1rem 0; color: #333; font-size: 1.1rem;">
+                        <i class="bi bi-info-circle"></i> ¿Qué es la autenticación de dos factores?
+                    </h3>
+                    <ul style="margin: 0; padding-left: 1.5rem; color: #666; line-height: 1.8;">
+                        <li>Protege tu cuenta con un código adicional de 6 dígitos</li>
+                        <li>Usa la app Google Authenticator en tu teléfono</li>
+                        <li>Los códigos cambian cada 30 segundos</li>
+                        <li>Funciona sin conexión a internet</li>
+                    </ul>
+                </div>
+
+                <!-- Acciones -->
+                <div th:if="${!twoFactorEnabled}">
+                    <h3 style="margin: 0 0 1rem 0; color: #333;">Habilitar 2FA</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Necesitarás la app <strong>Google Authenticator</strong> instalada en tu teléfono.
+                    </p>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                        <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" 
+                           target="_blank"
+                           style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #34a853; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                            <i class="bi bi-google-play"></i> Android
+                        </a>
+                        <a href="https://apps.apple.com/app/google-authenticator/id388497605" 
+                           target="_blank"
+                           style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #000; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">
+                            <i class="bi bi-apple"></i> iOS
+                        </a>
+                    </div>
+
+                    <form action="/user-account/2fa/enable" method="post">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-shield-plus"></i> Habilitar autenticación de dos factores
+                        </button>
+                    </form>
+                </div>
+
+                <div th:if="${twoFactorEnabled}">
+                    <h3 style="margin: 0 0 1rem 0; color: #333;">Deshabilitar 2FA</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Para deshabilitar la autenticación de dos factores, ingresa un código de tu app Google Authenticator.
+                    </p>
+                    
+                    <form action="/user-account/2fa/disable" method="post" class="edit-form">
+                        <div class="form-group">
+                            <label for="code">
+                                <i class="bi bi-key"></i> Código de verificación
+                            </label>
+                            <input type="text" 
+                                   id="code" 
+                                   name="code" 
+                                   required
+                                   maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   placeholder="000000"
+                                   style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-family: 'Courier New', monospace;">
+                            <small class="form-hint">
+                                <i class="bi bi-info-circle"></i> Ingresa el código de 6 dígitos de tu app
+                            </small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-security">
+                                <i class="bi bi-shield-x"></i> Deshabilitar 2FA
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="grid-footer container">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <i class="bi bi-house-heart"></i>
+                        <span>FU<strong>RENT</strong></span>
+                    </div>
+                    <p class="footer-description">Transformamos tus eventos con mobiliario de alta calidad y servicio excepcional.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Categorías</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-chevron-right"></i> Eventos Corporativos</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Bodas y Celebraciones</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Fiestas Infantiles</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Quinceañeros</a>    
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Sobre Nosotros</h3>
+                    <nav class="footer-menu">
+                        <a href="/about"><i class="bi bi-chevron-right"></i> Nuestra Historia</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Misión y Visión</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Política de Privacidad</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Términos y Condiciones</a>
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-telephone"></i> +57 300 123 4567</a>
+                        <a href="#"><i class="bi bi-envelope"></i> info@furniturerent.com</a>
+                        <a href="#"><i class="bi bi-geo-alt"></i> Bogotá, Colombia</a>
+                        <a href="#"><i class="bi bi-clock"></i> Lun - Sáb: 8am - 6pm</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">© 2024 FURENT. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Vista Previa del Carrito -->
+    <div th:replace="~{fragments/cart-preview :: cart-preview}"></div>
+    
+    <!-- Botón Admin -->
+    <div th:replace="~{fragments/admin-button :: admin-button}"></div>
+
+    <script>
+        // Auto-formatear el código (solo números)
+        const codeInput = document.getElementById('code');
+        if (codeInput) {
+            codeInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+        }
+
+        // Mostrar mensajes con SweetAlert
+        window.addEventListener('DOMContentLoaded', function() {
+            const mensaje = document.querySelector('.alert-success');
+            const error = document.querySelector('.alert-error');
+            
+            if (mensaje) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: mensaje.querySelector('span').textContent,
+                    confirmButtonColor: '#8cbc00'
+                });
+            }
+            
+            if (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.querySelector('span').textContent,
+                    confirmButtonColor: '#8cbc00'
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis direcciones | FURENT</title>
+    <!-- Script inline para aplicar tema ANTES de cargar CSS y evitar parpadeos -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            const bg = theme === 'dark' ? '#0f172a' : '#ffffff';
+            const style = document.createElement('style');
+            style.id = 'pre-theme-style';
+            style.textContent = `html,body{background:${bg};}`;
+            document.head.appendChild(style);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" th:href="@{/css/normalize.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+    <link rel="stylesheet" th:href="@{/css/modern-styles.css}">
+    <link rel="stylesheet" th:href="@{/css/dark-mode.css}">
+    <link rel="stylesheet" th:href="@{/css/cart-preview.css}">
+    <link rel="stylesheet" th:href="@{/css/header-adjustments.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script th:src="@{/js/theme-toggle.js}"></script>
+    <script th:src="@{/js/cart-preview.js}"></script>
+    <style>
+        .direcciones-page { padding: 60px 0; min-height: 70vh; background: #f8f9fa; }
+        .direcciones-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .direcciones-header { margin-bottom: 40px; text-align: center; }
+        .direcciones-header h1 { font-size: 36px; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+        .direcciones-header h1 i { color: #8cbc00; font-size: 42px; }
+        .direcciones-header p { color: #7f8c8d; font-size: 18px; }
+        
+        .btn-agregar-direccion { background: linear-gradient(135deg, #8cbc00, #037bc0); color: white; padding: 15px 30px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+        .btn-agregar-direccion:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(140, 188, 0, 0.3); }
+        
+        .direcciones-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
+        
+        .direccion-card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; border: 2px solid transparent; }
+        .direccion-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: translateY(-3px); }
+        .direccion-card.principal { border-color: #8cbc00; background: linear-gradient(135deg, rgba(140, 188, 0, 0.05) 0%, rgba(255, 255, 255, 1) 100%); }
+        
+        .direccion-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, #8cbc00, #037bc0); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        
+        .direccion-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; }
+        .direccion-nombre { font-size: 22px; font-weight: 700; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; }
+        .direccion-nombre i { color: #8cbc00; }
+        
+        .direccion-info { margin: 15px 0; }
+        .direccion-item { display: flex; align-items: start; gap: 10px; margin-bottom: 10px; color: #555; }
+        .direccion-item i { color: #8cbc00; font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+        .direccion-item span { flex: 1; }
+        
+        .direccion-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0; }
+        .btn-direccion { flex: 1; min-width: 90px; padding: 10px 6px; border: none; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; text-align: center; line-height: 1.2; }
+        .btn-direccion i { flex-shrink: 0; font-size: 14px; }
+        .btn-principal { background: rgba(140, 188, 0, 0.1); color: #8cbc00; border: 2px solid #8cbc00; }
+        .btn-principal:hover { background: #8cbc00; color: white; transform: translateY(-2px); }
+        .btn-editar { background: rgba(3, 123, 192, 0.1); color: #037bc0; border: 2px solid #037bc0; }
+        .btn-editar:hover { background: #037bc0; color: white; transform: translateY(-2px); }
+        .btn-eliminar { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid #ef4444; }
+        .btn-eliminar:hover { background: #ef4444; color: white; transform: translateY(-2px); }
+        
+        .empty-direcciones { text-align: center; padding: 80px 20px; background: white; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .empty-direcciones i { font-size: 120px; color: #e0e0e0; margin-bottom: 30px; }
+        .empty-direcciones h2 { font-size: 32px; color: #2c3e50; margin-bottom: 15px; }
+        .empty-direcciones p { font-size: 18px; color: #7f8c8d; margin-bottom: 30px; }
+        
+        /* Modal Styles */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; position: relative; animation: modalSlideIn 0.3s ease; }
+        @keyframes modalSlideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .modal-header h2 { font-size: 28px; color: #2c3e50; margin: 0; display: flex; align-items: center; gap: 10px; }
+        .modal-close { background: none; border: none; font-size: 28px; color: #7f8c8d; cursor: pointer; transition: all 0.3s; }
+        .modal-close:hover { color: #ef4444; transform: rotate(90deg); }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: #2c3e50; margin-bottom: 8px; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s; font-family: 'Poppins', sans-serif; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #8cbc00; box-shadow: 0 0 0 3px rgba(140, 188, 0, 0.1); }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .form-checkbox { display: flex; align-items: center; gap: 10px; padding: 15px; background: #f8f9fa; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+        .form-checkbox:hover { background: rgba(140, 188, 0, 0.1); }
+        .form-checkbox input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .form-checkbox label { cursor: pointer; font-weight: 600; color: #2c3e50; margin: 0; }
+        
+        .modal-actions { display: flex; gap: 15px; margin-top: 30px; }
+        .btn-submit { flex: 2; background: linear-gradient(135deg, #8cbc00, #037bc0); color: white; padding: 15px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(140, 188, 0, 0.3); }
+        .btn-cancel { flex: 1; background: white; color: #7f8c8d; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .btn-cancel:hover { background: #f8f9fa; border-color: #7f8c8d; }
+        
+        .alert { padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        @media (max-width: 768px) {
+            .direcciones-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .direccion-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="container top-bar-content">
+            <div class="contact-info">
+                <span><i class="bi bi-telephone"></i> +57 300 123 4567</span>
+                <span><i class="bi bi-envelope"></i> info@furniturerent.com</span>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="bi bi-facebook"></i></a>
+                <a href="#"><i class="bi bi-instagram"></i></a>
+                <a href="#"><i class="bi bi-twitter"></i></a>
+                <a href="#"><i class="bi bi-linkedin"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container header-content">
+            <a href="/" class="logo" aria-label="Ir al inicio">
+                <i class="bi bi-house-heart"></i>
+                <span>FU<strong>RENT</strong></span>
+            </a>
+
+            <nav class="nav-principal">
+                <a href="/">Inicio</a>
+                <a href="/about">Nosotros</a>
+                <a href="/store">Alquilar</a>
+                <a href="/contact">Contacto</a>
+                <a th:if="${session.usuario}" href="/alquiler/mis-alquileres">
+                    <i class="bi bi-calendar-check"></i> Mis alquileres
+                </a>
+                <a th:if="${session.usuario}" href="/favoritos">
+                    <i class="bi bi-heart-fill"></i> Favoritos
+                </a>
+            </nav>
+            
+            <!-- Menú de usuario logueado -->
+            <div class="user-menu" th:if="${session.usuario}">
+                <div class="user-menu-toggle">
+                    <div class="user-avatar" th:text="${#strings.substring(session.usuarioNombre, 0, 1)}">U</div>
+                    <span th:text="${session.usuarioNombre}">Usuario</span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+                <div class="user-dropdown">
+                    <div class="user-dropdown-header">
+                        <strong th:text="${session.usuarioNombre}">Usuario</strong>
+                        <p th:text="${session.usuario.correo}">email@example.com</p>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="/user-account">
+                            <i class="bi bi-person"></i> Mi cuenta
+                        </a>
+                        <a href="/alquiler/mis-alquileres">
+                            <i class="bi bi-calendar-check"></i> Mis alquileres
+                        </a>
+                        <a href="/direcciones" class="active">
+                            <i class="bi bi-geo-alt"></i> Mis direcciones
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="/logout" class="logout-link">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Botón del carrito -->
+            <button class="cart-btn-header" onclick="toggleCart()" aria-label="Ver carrito">
+                <i class="bi bi-cart3"></i>
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </button>
+            
+            <!-- Botón de cambio de tema -->
+            <button class="theme-toggle-btn" aria-label="Cambiar tema">
+                <i class="bi bi-moon-fill"></i>
+            </button>
+            
+            <!-- Botón de login si no hay sesión -->
+            <a th:unless="${session.usuario}" href="/login" class="login-btn">
+                <i class="bi bi-person-circle"></i> Iniciar sesión
+            </a>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-overlay"></div>
+        <div class="container">
+            <h1 class="page-title">Mis direcciones</h1>
+            <p class="page-breadcrumb"><a href="/">Inicio</a> / <a href="/user-account">Mi cuenta</a> / Direcciones</p>
+        </div>
+    </section>
+
+    <!-- Direcciones Page -->
+    <main class="direcciones-page">
+        <div class="direcciones-container">
+            <!-- Mensajes -->
+            <div class="alert alert-success" th:if="${mensaje}">
+                <i class="bi bi-check-circle"></i> <span th:text="${mensaje}"></span>
+            </div>
+            <div class="alert alert-error" th:if="${error}">
+                <i class="bi bi-exclamation-circle"></i> <span th:text="${error}"></span>
+            </div>
+
+            <div class="direcciones-header">
+                <h1><i class="bi bi-geo-alt-fill"></i> Mis direcciones de entrega</h1>
+                <p>Gestiona tus direcciones para entregas de mobiliario</p>
+            </div>
+
+            <button class="btn-agregar-direccion" onclick="abrirModalNueva()">
+                <i class="bi bi-plus-circle"></i> Agregar nueva dirección
+            </button>
+
+            <!-- Empty State -->
+            <div class="empty-direcciones" th:if="${direcciones == null || direcciones.isEmpty()}">
+                <i class="bi bi-geo-alt"></i>
+                <h2>No tienes direcciones guardadas</h2>
+                <p>Agrega una dirección para facilitar tus futuros pedidos</p>
+            </div>
+
+            <!-- Direcciones Grid -->
+            <div class="direcciones-grid" th:if="${direcciones != null && !direcciones.isEmpty()}">
+                <div class="direccion-card" th:each="direccion : ${direcciones}" 
+                     th:classappend="${direccion.esPrincipal ? 'principal' : ''}">
+                    
+                    <span class="direccion-badge" th:if="${direccion.esPrincipal}">
+                        <i class="bi bi-star-fill"></i> Principal
+                    </span>
+                    
+                    <h3 class="direccion-nombre">
+                        <i class="bi bi-house-door-fill"></i>
+                        <span th:text="${direccion.nombreDireccion}">Casa</span>
+                    </h3>
+                    
+                    <div class="direccion-info">
+                        <div class="direccion-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span th:text="${direccion.direccionCompleta}">Dirección completa</span>
+                        </div>
+                        <div class="direccion-item">
+                            <i class="bi bi-building"></i>
+                            <span th:text="${direccion.ciudad + ', ' + direccion.departamento}">Ciudad, Departamento</span>
+                        </div>
+                        <div class="direccion-item" th:if="${direccion.codigoPostal}">
+                            <i class="bi bi-mailbox"></i>
+                            <span>Código postal: <span th:text="${direccion.codigoPostal}">000000</span></span>
+                        </div>
+                        <div class="direccion-item">
+                            <i class="bi bi-telephone-fill"></i>
+                            <span th:text="${direccion.telefono}">Teléfono</span>
+                        </div>
+                        <div class="direccion-item" th:if="${direccion.referencia}">
+                            <i class="bi bi-signpost-2-fill"></i>
+                            <span th:text="${direccion.referencia}">Referencia</span>
+                        </div>
+                    </div>
+                    
+                    <div class="direccion-actions">
+                        <button class="btn-direccion btn-principal" 
+                                th:if="${!direccion.esPrincipal}"
+                                th:data-direccion-id="${direccion.id}"
+                                onclick="establecerPrincipal(this.dataset.direccionId)">
+                            <i class="bi bi-star"></i> Hacer principal
+                        </button>
+                        <button class="btn-direccion btn-editar" 
+                                th:data-direccion-id="${direccion.id}"
+                                onclick="abrirModalEditar(this.dataset.direccionId)">
+                            <i class="bi bi-pencil"></i> Editar
+                        </button>
+                        <button class="btn-direccion btn-eliminar" 
+                                th:data-direccion-id="${direccion.id}"
+                                onclick="eliminarDireccion(this.dataset.direccionId)">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="footer-main">
+            <div class="grid-footer container">
+                <div class="footer-column">
+                    <div class="footer-logo">
+                        <i class="bi bi-house-heart"></i>
+                        <span>FU<strong>RENT</strong></span>
+                    </div>
+                    <p class="footer-description">Transformamos tus eventos con mobiliario de alta calidad y servicio excepcional.</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Categorías</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-chevron-right"></i> Eventos Corporativos</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Bodas y Celebraciones</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Fiestas Infantiles</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Quinceañeros</a>    
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Sobre Nosotros</h3>
+                    <nav class="footer-menu">
+                        <a href="/about"><i class="bi bi-chevron-right"></i> Nuestra Historia</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Misión y Visión</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Política de Privacidad</a>
+                        <a href="#"><i class="bi bi-chevron-right"></i> Términos y Condiciones</a>
+                    </nav>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contacto</h3>
+                    <nav class="footer-menu">
+                        <a href="#"><i class="bi bi-telephone"></i> +57 300 123 4567</a>
+                        <a href="#"><i class="bi bi-envelope"></i> info@furniturerent.com</a>
+                        <a href="#"><i class="bi bi-geo-alt"></i> Bogotá, Colombia</a>
+                        <a href="#"><i class="bi bi-clock"></i> Lun - Sáb: 8am - 6pm</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">© 2024 FURENT. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Preview -->
+    <div th:replace="~{fragments/cart-preview :: cart-preview}"></div>
+
+    <!-- Modal Nueva Dirección -->
+    <div class="modal-overlay" id="modalNueva">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="bi bi-plus-circle"></i> Nueva dirección</h2>
+                <button class="modal-close" onclick="cerrarModal('modalNueva')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <form action="/direcciones/crear" method="POST">
+                <div class="form-group">
+                    <label for="nombreDireccion">Nombre de la dirección <span style="color: red;">*</span></label>
+                    <input type="text" id="nombreDireccion" name="nombreDireccion" 
+                           placeholder="Ej: Casa, Oficina, Casa de playa..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="direccionCompleta">Dirección completa <span style="color: red;">*</span></label>
+                    <textarea id="direccionCompleta" name="direccionCompleta" 
+                              placeholder="Calle, número, apartamento..." required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ciudad">Ciudad <span style="color: red;">*</span></label>
+                        <input type="text" id="ciudad" name="ciudad" placeholder="Ej: Bogotá" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="departamento">Departamento <span style="color: red;">*</span></label>
+                        <input type="text" id="departamento" name="departamento" placeholder="Ej: Cundinamarca" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="codigoPostal">Código postal</label>
+                        <input type="text" id="codigoPostal" name="codigoPostal" placeholder="110111">
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono de contacto <span style="color: red;">*</span></label>
+                        <input type="tel" id="telefono" name="telefono" placeholder="3001234567" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="referencia">Referencia o punto de encuentro</label>
+                    <input type="text" id="referencia" name="referencia" 
+                           placeholder="Ej: Frente al parque, edificio azul...">
+                </div>
+                
+                <div class="form-checkbox">
+                    <input type="checkbox" id="esPrincipal" name="esPrincipal">
+                    <label for="esPrincipal">Establecer como dirección principal</label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModal('modalNueva')">Cancelar</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i> Guardar dirección
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Dirección -->
+    <div class="modal-overlay" id="modalEditar">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="bi bi-pencil"></i> Editar dirección</h2>
+                <button class="modal-close" onclick="cerrarModal('modalEditar')">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <form id="formEditar" method="POST">
+                <input type="hidden" id="edit_id" name="id">
+                
+                <div class="form-group">
+                    <label for="edit_nombreDireccion">Nombre de la dirección <span style="color: red;">*</span></label>
+                    <input type="text" id="edit_nombreDireccion" name="nombreDireccion" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_direccionCompleta">Dirección completa <span style="color: red;">*</span></label>
+                    <textarea id="edit_direccionCompleta" name="direccionCompleta" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_ciudad">Ciudad <span style="color: red;">*</span></label>
+                        <input type="text" id="edit_ciudad" name="ciudad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_departamento">Departamento <span style="color: red;">*</span></label>
+                        <input type="text" id="edit_departamento" name="departamento" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_codigoPostal">Código postal</label>
+                        <input type="text" id="edit_codigoPostal" name="codigoPostal">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_telefono">Teléfono de contacto <span style="color: red;">*</span></label>
+                        <input type="tel" id="edit_telefono" name="telefono" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit_referencia">Referencia o punto de encuentro</label>
+                    <input type="text" id="edit_referencia" name="referencia">
+                </div>
+                
+                <div class="form-checkbox">
+                    <input type="checkbox" id="edit_esPrincipal" name="esPrincipal">
+                    <label for="edit_esPrincipal">Establecer como dirección principal</label>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="cerrarModal('modalEditar')">Cancelar</button>
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i> Actualizar dirección
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        // Datos de direcciones desde el servidor
+        const direccionesData = /*[[${direcciones}]]*/ [];
+
+        // Abrir modal nueva dirección
+        function abrirModalNueva() {
+            document.getElementById('modalNueva').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Abrir modal editar dirección
+        function abrirModalEditar(direccionId) {
+            const direccion = direccionesData.find(d => d.id === direccionId);
+            
+            if (!direccion) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Dirección no encontrada',
+                    confirmButtonColor: '#8cbc00'
+                });
+                return;
+            }
+
+            // Llenar el formulario
+            document.getElementById('edit_id').value = direccion.id;
+            document.getElementById('edit_nombreDireccion').value = direccion.nombreDireccion;
+            document.getElementById('edit_direccionCompleta').value = direccion.direccionCompleta;
+            document.getElementById('edit_ciudad').value = direccion.ciudad;
+            document.getElementById('edit_departamento').value = direccion.departamento;
+            document.getElementById('edit_codigoPostal').value = direccion.codigoPostal || '';
+            document.getElementById('edit_telefono').value = direccion.telefono;
+            document.getElementById('edit_referencia').value = direccion.referencia || '';
+            document.getElementById('edit_esPrincipal').checked = direccion.esPrincipal;
+
+            // Configurar action del formulario
+            document.getElementById('formEditar').action = '/direcciones/editar/' + direccion.id;
+
+            // Abrir modal
+            document.getElementById('modalEditar').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Cerrar modal
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer click fuera
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    cerrarModal(this.id);
+                }
+            });
+        });
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    cerrarModal(modal.id);
+                });
+            }
+        });
+
+        // Establecer dirección como principal
+        function establecerPrincipal(direccionId) {
+            Swal.fire({
+                title: '¿Establecer como principal?',
+                text: 'Esta será tu dirección predeterminada para entregas',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#8cbc00',
+                cancelButtonColor: '#7f8c8d',
+                confirmButtonText: 'Sí, establecer',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/direcciones/principal/' + direccionId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Actualizado!',
+                                text: data.message,
+                                confirmButtonColor: '#8cbc00',
+                                timer: 2000
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#8cbc00'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Ocurrió un error al actualizar la dirección',
+                            confirmButtonColor: '#8cbc00'
+                        });
+                    });
+                }
+            });
+        }
+
+        // Eliminar dirección
+        function eliminarDireccion(direccionId) {
+            Swal.fire({
+                title: '¿Eliminar dirección?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#7f8c8d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Crear un formulario oculto para enviar POST
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/direcciones/eliminar/' + direccionId;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Actualizar contador del carrito al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof actualizarContadorCarrito === 'function') {
+                actualizarContadorCarrito();
+            }
+        });
+    </script>
+
+</body>
+</html>
